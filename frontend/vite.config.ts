@@ -1,0 +1,16 @@
+import tailwindcss from "@tailwindcss/vite";
+import react from "@vitejs/plugin-react";
+import { defineConfig } from "vitest/config";
+
+const backend = process.env.VITE_BACKEND_URL ?? "http://localhost:8000";
+
+export default defineConfig({
+  plugins: [react(), tailwindcss()],
+  server: {
+    host: true,
+    port: 5173,
+    proxy: { "/api": { target: backend, changeOrigin: true } },
+  },
+  build: { outDir: "dist", sourcemap: false },
+  test: { environment: "jsdom", globals: false },
+});
