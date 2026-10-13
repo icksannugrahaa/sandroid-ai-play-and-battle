@@ -1,0 +1,42 @@
+# Development: postgres + backend (hot reload) + Vite dev server.
+#   docker compose up --build    →  http://localhost:5173
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: sandroid
+      POSTGRES_PASSWORD: sandroid
+      POSTGRES_DB: sandroid
+    ports: ["5432:5432"]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sandroid"]
+      interval: 3s
+      retries: 20
+
+  backend:
+    build: { context: ., target: dev }
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sandroid:sandroid@postgres:5432/sandroid
+      ENVIRONMENT: development
+    volumes:
+      - ./backend:/app
+      - ./aliases.json:/aliases.json:ro
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+  frontend:
+    image: node:24-alpine
+    working_dir: /app
+    command: sh -c "npm ci --no-audit --no-fund && npm run dev -- --host 0.0.0.0"
+    environment:
+      VITE_BACKEND_URL: http://backend:8000
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    ports: ["5173:5173"]
+    depends_on: [backend]
+
+volumes:
+  pgdata:

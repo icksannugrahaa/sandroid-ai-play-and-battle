@@ -1,0 +1,48 @@
+@import "tailwindcss";
+
+@utility card {
+  @apply rounded-xl border border-slate-800 bg-slate-900/60 p-4;
+}
+@utility input {
+  @apply w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none;
+}
+@utility label {
+  @apply mb-1 block text-xs font-medium tracking-wide text-slate-400 uppercase;
+}
+@utility btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+}
+@utility btn-primary {
+  @apply btn bg-sky-600 text-white hover:bg-sky-500;
+}
+@utility btn-secondary {
+  @apply btn border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800;
+}
+@utility btn-danger {
+  @apply btn bg-rose-700 text-white hover:bg-rose-600;
+}
+@utility badge {
+  @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium;
+}
+@utility th {
+  @apply px-3 py-2 text-left text-xs font-semibold tracking-wide whitespace-nowrap text-slate-400 uppercase;
+}
+@utility td {
+  @apply px-3 py-2 text-sm whitespace-nowrap;
+}
+
+/* Model prose rendered from markdown (sanitized). */
+.md > * + * { margin-top: 0.6em; }
+.md h1 { font-size: 1.25rem; font-weight: 600; }
+.md h2 { font-size: 1.1rem; font-weight: 600; }
+.md h3, .md h4 { font-size: 1rem; font-weight: 600; }
+.md ul { list-style: disc; padding-left: 1.4em; }
+.md ol { list-style: decimal; padding-left: 1.4em; }
+.md li + li { margin-top: 0.2em; }
+.md a { color: var(--color-sky-400); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
+.md code { font-family: ui-monospace, monospace; font-size: 0.85em; background: var(--color-slate-800); padding: 0.1em 0.35em; border-radius: 4px; }
+.md blockquote { border-left: 3px solid var(--color-slate-700); padding-left: 0.8em; color: var(--color-slate-300); }
+.md hr { border-color: var(--color-slate-800); }
+.md table { border-collapse: collapse; font-size: 0.85em; display: block; overflow-x: auto; }
+.md th, .md td { border: 1px solid var(--color-slate-800); padding: 0.3em 0.6em; text-align: left; }
+.md th { background: var(--color-slate-900); }

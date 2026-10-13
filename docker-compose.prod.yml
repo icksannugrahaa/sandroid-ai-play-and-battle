@@ -1,0 +1,30 @@
+# Production: one app container + postgres.
+#   POSTGRES_PASSWORD=change-me docker compose -f docker-compose.prod.yml up -d
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: sandroid
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD}
+      POSTGRES_DB: sandroid
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U sandroid"]
+      interval: 5s
+      retries: 20
+
+  app:
+    image: ghcr.io/icksannugrahaa/sandroid-ai-play-and-battle:latest
+    build: { context: ., target: prod }
+    restart: unless-stopped
+    environment:
+      DATABASE_URL: postgresql+asyncpg://sandroid:${POSTGRES_PASSWORD}@postgres:5432/sandroid
+      TRUST_PROXY_HEADERS: ${TRUST_PROXY_HEADERS:-false}
+      CORS_ORIGINS: ${CORS_ORIGINS:-}
+    ports: ["${APP_PORT:-8000}:8000"]
+    depends_on:
+      postgres: { condition: service_healthy }
+
+volumes:
+  pgdata:

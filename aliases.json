@@ -1,0 +1,4 @@
+{
+  "$comment": "Curated model aliases. Each rule maps a raw model name onto a canonical key, overriding the automatic normalizer. Non-regex 'pattern' is compared after normalization (case/punctuation-insensitive). Add \"regex\": true to full-match a regex against the lowercased name (namespace stripped). Changes go through pull requests — see CONTRIBUTING.md.",
+  "aliases": []
+}
