@@ -2,7 +2,8 @@ import { useInfiniteQuery, useMutation, useQueryClient } from "@tanstack/react-q
 import { useDeferredValue, useState } from "react";
 
 import { getPricing, researchPricing } from "../api/client";
-import { ErrorNote, errorKey, formatDuration, LoadMore, PageHeader, useCountdown } from "../components/ui";
+import { Icon } from "../components/icons";
+import { EmptyState, ErrorNote, errorKey, formatDuration, LoadMore, PageHeader, SearchInput, SkeletonRows, useCountdown } from "../components/ui";
 import { useLang, useT } from "../i18n";
 import { date, usd } from "../lib/format";
 import type { PricingResponse } from "../types";
@@ -35,6 +36,7 @@ export default function Pricing() {
   return (
     <div className="space-y-4">
       <PageHeader
+        icon="tag"
         title={t("pricing.title")}
         subtitle={t("pricing.subtitle")}
         actions={
@@ -46,6 +48,7 @@ export default function Pricing() {
               if (window.confirm(t("pricing.researchConfirm"))) research.mutate();
             }}
           >
+            <Icon name="refresh" size={15} className={research.isPending ? "animate-spin" : ""} />
             {research.isPending ? t("pricing.researching") : cooldown > 0 ? t("pricing.cooldown", { time: formatDuration(cooldown) }) : t("pricing.research")}
           </button>
         }
@@ -60,7 +63,7 @@ export default function Pricing() {
             </span>
             <span className="text-slate-400">{t("pricing.entriesUpdated", { n: last.entries_updated })}</span>
             {Object.entries(last.sources_status).map(([name, s]) => (
-              <span key={name} className={`badge ${s.ok ? "bg-emerald-950 text-emerald-300" : "bg-rose-950 text-rose-300"}`}>
+              <span key={name} className={`badge animate-pop ${s.ok ? "bg-emerald-950 text-emerald-300" : "bg-rose-950 text-rose-300"}`}>
                 {name}: {s.ok ? s.entries : s.error}
               </span>
             ))}
@@ -84,8 +87,8 @@ export default function Pricing() {
       )}
 
       <div className="flex items-center gap-3">
-        <input className="input max-w-sm" placeholder={t("common.search")} value={search} onChange={(e) => setSearch(e.target.value)} />
-        {first && <span className="text-sm text-slate-500">{t("pricing.total", { n: first.total })}</span>}
+        <SearchInput value={search} onChange={setSearch} />
+        {first && <span className="badge bg-slate-800/80 text-slate-400">{t("pricing.total", { n: first.total })}</span>}
       </div>
 
       <section className="card overflow-x-auto p-0">
@@ -102,7 +105,7 @@ export default function Pricing() {
           </thead>
           <tbody>
             {entries.map((e) => (
-              <tr key={e.canonical_key} className="border-b border-slate-900 hover:bg-slate-900/50">
+              <tr key={e.canonical_key} className="row">
                 <td className="td">
                   <div>{e.raw_name}</div>
                   <div className="font-mono text-[11px] text-slate-500">{e.canonical_key}</div>
@@ -116,7 +119,8 @@ export default function Pricing() {
             ))}
           </tbody>
         </table>
-        {!query.isLoading && entries.length === 0 && <p className="p-6 text-center text-sm text-slate-500">{t("common.noData")}</p>}
+        {!query.isLoading && entries.length === 0 && <EmptyState icon="tag" title={t("common.noData")} />}
+        {query.isLoading && <SkeletonRows cols={5} />}
       </section>
       {query.error && <ErrorNote code={errorKey(query.error)} />}
       <LoadMore show={!!query.hasNextPage} loading={query.isFetchingNextPage} onClick={() => void query.fetchNextPage()} />

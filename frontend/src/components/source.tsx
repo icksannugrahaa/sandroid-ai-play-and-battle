@@ -54,8 +54,8 @@ export function SourceViewer({ files, title, onClose }: { files: SourceFile[]; t
   }, [onClose]);
 
   return createPortal(
-    <div className="fixed inset-0 z-[70] flex bg-black/75 p-2 sm:p-6" onClick={onClose} role="dialog" aria-modal="true">
-      <div className="flex min-h-0 w-full flex-col overflow-hidden rounded-xl border border-slate-700 bg-slate-950 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[70] flex animate-fade-in bg-slate-950/80 p-2 backdrop-blur-sm sm:p-6" onClick={onClose} role="dialog" aria-modal="true">
+      <div className="flex min-h-0 w-full animate-scale-in flex-col overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex flex-wrap items-center gap-3 border-b border-slate-800 px-4 py-2.5">
           <span className="font-mono text-sm text-slate-300">&lt;/&gt;</span>
           <span className="truncate text-sm font-medium">{title}</span>

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 
 import { CacheSetting } from "../components/cache";
 import { ModelBoards, VerdictBadge } from "../components/boards";
@@ -8,7 +8,8 @@ import { AdvancedSettings, Composer } from "../components/composer";
 import { StorageMeter } from "../components/game";
 import { UserBubble } from "../components/rich";
 import { ModelPicker, OutputView, ResultsTable, SlotTimer, StatusBadge } from "../components/run";
-import { ErrorNote, RunOptions, Segmented } from "../components/ui";
+import { Icon } from "../components/icons";
+import { Collapse, EmptyState, ErrorNote, IconTile, RunOptions, Segmented } from "../components/ui";
 import { UsageMini, UsageSummary } from "../components/usage";
 import { useT } from "../i18n";
 import { useCredentials } from "../stores/credentials";
@@ -46,13 +47,15 @@ function RoundView({
   const [open, setOpen] = useState(startOpen);
   useEffect(() => setOpen(startOpen), [startOpen]);
   return (
-    <section className="space-y-3">
+    <section className="animate-fade-up space-y-3">
       {challenge ? (
         <ChallengeHeader challenge={challenge} index={index} />
       ) : (
         <div className="flex items-center gap-3">
-          <span className="badge bg-slate-800 text-slate-300">{t("arena.round", { n: index + 1 })}</span>
-          <div className="h-px flex-1 bg-slate-800" />
+          <span className="badge bg-gradient-to-r from-sky-500/20 to-indigo-500/10 px-2.5 py-1 text-sky-200 ring-sky-700/40">
+            {t("arena.round", { n: index + 1 })}
+          </span>
+          <div className="h-px flex-1 bg-gradient-to-r from-slate-700 to-transparent" />
         </div>
       )}
       {challenge && <PuzzleCard challenge={challenge} overview={!HAS_3D.has(challenge.id) || challenge.id === "arc"} />}
@@ -102,12 +105,13 @@ function RoundView({
       />
       {requestError && <ErrorNote code={requestError} />}
       {open && (
-        <div className="grid gap-3 md:grid-cols-2">
+        <div className="stagger grid gap-3 md:grid-cols-2">
           {results.map((x, i) => (
-            <section key={i} className="card min-w-0 space-y-2 p-3">
+            <section key={i} className="card min-w-0 space-y-2 p-3" style={{ "--i": i } as CSSProperties}>
               <div className="flex items-center justify-between gap-2">
-                <h3 className="truncate text-sm font-medium" title={x.model}>
-                  {x.model}
+                <h3 className="flex min-w-0 items-center gap-2 text-sm font-medium" title={x.model}>
+                  <SlotNumber n={i} />
+                  <span className="truncate">{x.model}</span>
                 </h3>
                 <div className="flex shrink-0 items-center gap-2">
                   <SlotTimer slot={x} />
@@ -129,6 +133,24 @@ function RoundView({
         </div>
       )}
     </section>
+  );
+}
+
+const SLOT_TONE = [
+  "from-sky-400 to-sky-600 shadow-sky-500/40",
+  "from-fuchsia-400 to-fuchsia-600 shadow-fuchsia-500/40",
+  "from-amber-300 to-amber-500 shadow-amber-500/40",
+  "from-emerald-400 to-emerald-600 shadow-emerald-500/40",
+];
+
+/** Colored contender number, so a model keeps the same badge across lineup, rounds and cards. */
+function SlotNumber({ n }: { n: number }) {
+  return (
+    <span
+      className={`inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-gradient-to-br text-[11px] font-bold text-slate-950 shadow-md ${SLOT_TONE[n % SLOT_TONE.length]}`}
+    >
+      {n + 1}
+    </span>
   );
 }
 
@@ -188,9 +210,10 @@ export default function Arena() {
 
   return (
     <ScopeContext.Provider value="arena">
-      <div className="flex min-h-[calc(100vh-9rem)] flex-col gap-5">
+      <div className="flex min-h-[calc(100vh-7rem)] flex-col gap-5">
         <div className="flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold tracking-tight">{t("arena.title")}</h1>
+          <IconTile name="swords" />
+          <h1 className="text-2xl font-semibold tracking-tight text-gradient">{t("arena.title")}</h1>
           <Segmented
             value={kind}
             onChange={(v) => setForm({ kind: v })}
@@ -199,11 +222,15 @@ export default function Arena() {
               { value: "challenge", label: t("arena.kindChallenge") },
             ]}
           />
-          {rounds.length > 0 && <span className="text-xs text-slate-500">{t("arena.roundsSoFar", { n: rounds.length })}</span>}
+          {rounds.length > 0 && (
+            <span key={rounds.length} className="badge animate-pop bg-slate-800/80 text-slate-300">
+              {t("arena.roundsSoFar", { n: rounds.length })}
+            </span>
+          )}
           <span className="flex-1" />
           {rounds.length > 0 && !busy && (
-            <button type="button" className="btn-secondary py-1 text-xs" onClick={s.newBattle}>
-              ⟲ {t("arena.newBattle")}
+            <button type="button" className="btn-secondary group animate-scale-in py-1 text-xs" onClick={s.newBattle}>
+              <Icon name="refresh" size={14} className="transition-transform duration-500 group-hover:-rotate-180" /> {t("arena.newBattle")}
             </button>
           )}
         </div>
@@ -214,25 +241,45 @@ export default function Arena() {
             <div className="flex flex-wrap items-center gap-2 text-xs">
               <span className="text-slate-400">{t("arena.lineup")}:</span>
               {picks.map((p, i) => (
-                <span key={i} className="badge bg-slate-800 font-mono text-slate-200">
-                  {i + 1}. {p.model}
+                <span key={i} className="flex items-center gap-2">
+                  {i > 0 && <span className="text-[10px] font-bold tracking-widest text-slate-600">{t("arena.vs")}</span>}
+                  <span className="badge gap-1.5 bg-slate-800/80 py-1 pl-1 font-mono text-slate-200">
+                    <SlotNumber n={i} />
+                    {p.model}
+                  </span>
                 </span>
               ))}
-              <span className="text-slate-500">· {t("arena.lineupLocked")}</span>
+              <span className="ml-1 inline-flex items-center gap-1 text-slate-500">
+                <Icon name="lock" size={12} /> {t("arena.lineupLocked")}
+              </span>
             </div>
           ) : (
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {picks.map((p, i) => (
-                <div key={i} className="rounded-lg border border-slate-800 p-3">
+                <div
+                  key={i}
+                  className={`group relative animate-scale-in rounded-xl border bg-slate-950/40 p-3 transition duration-200 hover:border-slate-600 ${p.model.trim() ? "border-slate-700" : "border-slate-800"}`}
+                >
+                  {i > 0 && (
+                    <span className="absolute top-1/2 left-0 z-10 hidden -translate-x-[calc(50%+0.375rem)] -translate-y-1/2 rounded-full border border-slate-700 bg-slate-900 px-1.5 py-0.5 text-[9px] font-bold tracking-widest text-slate-400 shadow-lg xl:block">
+                      {t("arena.vs")}
+                    </span>
+                  )}
                   <div className="mb-2 flex items-center justify-between">
-                    <span className="text-xs font-medium text-slate-400">{t("arena.slot", { n: i + 1 })}</span>
+                    <span className="flex items-center gap-2 text-xs font-medium text-slate-400">
+                      <SlotNumber n={i} />
+                      {t("arena.slot", { n: i + 1 })}
+                      {p.model.trim() && <Icon name="check" size={12} className="animate-pop text-emerald-400" />}
+                    </span>
                     {picks.length > 2 && (
                       <button
                         type="button"
-                        className="text-xs text-slate-500 hover:text-rose-300"
+                        aria-label={t("common.remove")}
+                        title={t("common.remove")}
+                        className="icon-btn h-6 w-6 opacity-60 group-hover:opacity-100 hover:bg-rose-950/60 hover:text-rose-300"
                         onClick={() => setPicks(picks.filter((_, j) => j !== i))}
                       >
-                        {t("common.remove")}
+                        <Icon name="trash" size={13} />
                       </button>
                     )}
                   </div>
@@ -249,10 +296,13 @@ export default function Arena() {
               {picks.length < 4 && (
                 <button
                   type="button"
-                  className="rounded-lg border border-dashed border-slate-700 p-3 text-sm text-slate-400 hover:border-slate-500 hover:text-slate-200"
+                  className="group flex min-h-24 flex-col items-center justify-center gap-1.5 rounded-xl border border-dashed border-slate-700 p-3 text-sm text-slate-400 transition duration-200 hover:border-sky-600/70 hover:bg-sky-950/20 hover:text-sky-200"
                   onClick={() => setPicks([...picks, { endpointId: firstId, model: "" }])}
                 >
-                  + {t("arena.addSlot")}
+                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-slate-700 transition duration-200 group-hover:rotate-90 group-hover:border-sky-600">
+                    <Icon name="plus" size={16} />
+                  </span>
+                  {t("arena.addSlot")}
                 </button>
               )}
             </div>
@@ -265,15 +315,25 @@ export default function Arena() {
         {/* Rounds */}
         <div className="flex-1 space-y-8">
           {rounds.length === 0 && !running && kind === "free" && (
-            <div className="flex min-h-[20vh] flex-col items-center justify-center gap-2 text-center">
-              <p className="text-lg text-slate-300">{t("arena.emptyTitle")}</p>
-              <p className="max-w-xl text-sm text-slate-500">{t("arena.emptyHint")}</p>
-            </div>
+            <EmptyState icon="swords" title={t("arena.emptyTitle")} hint={t("arena.emptyHint")}>
+              {[1, 2, 3, 4].map((k, i) => (
+                <button
+                  key={k}
+                  type="button"
+                  className="chip animate-fade-up"
+                  style={{ animationDelay: `${150 + i * 60}ms` }}
+                  onClick={() => setForm({ prompt: t(`suggest.battle${k}`) })}
+                >
+                  <Icon name="bolt" size={13} className="text-amber-400" />
+                  {t(`suggest.battle${k}`)}
+                </button>
+              ))}
+            </EmptyState>
           )}
           {rounds.length === 0 && !running && kind === "challenge" && (
-            <div className="space-y-3">
+            <div className="animate-fade-up space-y-3">
               <div>
-                <p className="text-lg text-slate-300">{t("challenge.emptyTitle")}</p>
+                <p className="text-lg font-medium text-slate-200">{t("challenge.emptyTitle")}</p>
                 <p className="max-w-3xl text-sm text-slate-500">{t("challenge.emptyHint")}</p>
               </div>
               <ChallengeGallery value={s.challengeId} onPick={(id) => setForm({ challengeId: id })} />
@@ -312,7 +372,7 @@ export default function Arena() {
         </div>
 
         {/* Composer + settings, pinned to the bottom like a chat */}
-        <div className="sticky bottom-0 z-20 -mx-4 border-t border-slate-800 bg-slate-950/95 px-4 pt-3 pb-4 backdrop-blur">
+        <div className="glass sticky bottom-0 z-20 -mx-4 border-t px-4 pt-3 pb-4 lg:-mx-8 lg:px-8">
           {kind === "challenge" ? (
             <ChallengeBar
               challengeId={s.challengeId}
@@ -341,7 +401,7 @@ export default function Arena() {
             />
           ) : (
             <>
-              {rounds.length > 0 && !running && <p className="mb-2 text-[11px] text-sky-300/80">↪ {t("arena.followUpHint")}</p>}
+              {rounds.length > 0 && !running && <p className="mb-2 animate-slide-down text-[11px] text-sky-300/80">↪ {t("arena.followUpHint")}</p>}
               <Composer
                 text={prompt}
                 onText={(v) => setForm({ prompt: v })}
@@ -376,16 +436,17 @@ export default function Arena() {
             <button
               type="button"
               aria-expanded={settingsOpen}
-              className={`btn-secondary py-1.5 text-xs ${settingsOpen ? "border-sky-700 text-sky-300" : ""}`}
+              className={`btn-secondary py-1.5 text-xs ${settingsOpen ? "border-sky-700 bg-sky-950/40 text-sky-200" : ""}`}
               onClick={() => setSettingsOpen((v) => !v)}
             >
-              ⚙ {t("playground.settings")}
-              {customized && <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
+              <Icon name="settings" size={14} className={`transition-transform duration-500 ${settingsOpen ? "rotate-90" : ""}`} />
+              {t("playground.settings")}
+              {customized && <span className="h-1.5 w-1.5 animate-pop rounded-full bg-sky-400" />}
             </button>
             <UsageMini usage={s.usage} />
           </div>
-          {settingsOpen && (
-            <div className="mt-3 max-h-[45vh] space-y-3 overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/60 p-3">
+          <Collapse open={settingsOpen}>
+            <div className="mt-3 max-h-[45vh] space-y-3 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900/60 p-3">
               <AdvancedSettings
                 defaultOpen
                 mode={mode}
@@ -404,7 +465,7 @@ export default function Arena() {
               <UsageSummary usage={s.usage} onReset={s.resetUsage} />
               <p className="text-[11px] text-slate-500">{t("notice.billing")}</p>
             </div>
-          )}
+          </Collapse>
         </div>
       </div>
     </ScopeContext.Provider>

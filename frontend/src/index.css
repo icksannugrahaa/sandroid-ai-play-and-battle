@@ -1,37 +1,182 @@
 @import "tailwindcss";
 
-@utility card {
-  @apply rounded-xl border border-slate-800 bg-slate-900/60 p-4;
+/* ── Motion tokens ───────────────────────────────────────────── */
+@theme {
+  --ease-out-soft: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  --animate-fade-up: fade-up 0.45s var(--ease-out-soft) both;
+  --animate-fade-in: fade-in 0.3s ease-out both;
+  --animate-scale-in: scale-in 0.22s var(--ease-out-soft) both;
+  --animate-slide-down: slide-down 0.28s var(--ease-out-soft) both;
+  --animate-shimmer: shimmer 1.6s linear infinite;
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-progress: progress 1.4s ease-in-out infinite;
+  --animate-pop: pop 0.35s var(--ease-spring) both;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  @keyframes scale-in {
+    from { opacity: 0; transform: scale(0.96) translateY(4px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes slide-down {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes shimmer {
+    from { background-position: -200% 0; }
+    to { background-position: 200% 0; }
+  }
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+  @keyframes progress {
+    0% { transform: translateX(-100%) scaleX(0.3); }
+    50% { transform: translateX(0) scaleX(0.6); }
+    100% { transform: translateX(100%) scaleX(0.3); }
+  }
+  @keyframes pop {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: none; opacity: 1; }
+  }
 }
+
+/* ── Base ────────────────────────────────────────────────────── */
+html {
+  color-scheme: dark;
+  scrollbar-color: var(--color-slate-700) transparent;
+}
+body {
+  font-feature-settings: "cv11", "ss01";
+  background-color: var(--color-slate-950);
+  background-image:
+    radial-gradient(60rem 40rem at 110% -10%, color-mix(in oklab, var(--color-sky-500) 9%, transparent), transparent 60%),
+    radial-gradient(50rem 36rem at -20% 110%, color-mix(in oklab, var(--color-indigo-500) 7%, transparent), transparent 60%);
+  background-attachment: fixed;
+}
+::selection { background: color-mix(in oklab, var(--color-sky-500) 35%, transparent); }
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-thumb {
+  background: var(--color-slate-800);
+  border: 3px solid transparent;
+  border-radius: 999px;
+  background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover { background-color: var(--color-slate-700); }
+::-webkit-scrollbar-track { background: transparent; }
+:focus-visible { outline: 2px solid var(--color-sky-500); outline-offset: 2px; border-radius: 6px; }
+input:focus-visible, textarea:focus-visible, select:focus-visible { outline: none; }
+summary { list-style: none; }
+summary::-webkit-details-marker { display: none; }
+details > summary { display: flex; align-items: center; gap: 0.4rem; }
+details > summary::before {
+  content: "";
+  width: 0.4rem;
+  height: 0.4rem;
+  border-right: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transition: transform 0.2s var(--ease-out-soft);
+  flex-shrink: 0;
+  opacity: 0.7;
+}
+details[open] > summary::before { transform: rotate(45deg); }
+details[open] > summary ~ * { animation: var(--animate-slide-down); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ── Surfaces ────────────────────────────────────────────────── */
+@utility card {
+  @apply rounded-2xl border border-slate-800/80 p-4 shadow-[0_1px_0_0_rgb(255_255_255/0.03)_inset,0_8px_24px_-12px_rgb(0_0_0/0.6)];
+  background: linear-gradient(180deg, color-mix(in oklab, var(--color-slate-900) 80%, transparent), color-mix(in oklab, var(--color-slate-900) 50%, transparent));
+}
+@utility card-hover {
+  @apply transition duration-200 hover:-translate-y-0.5 hover:border-slate-700 hover:shadow-[0_1px_0_0_rgb(255_255_255/0.04)_inset,0_14px_32px_-14px_rgb(0_0_0/0.7)];
+}
+@utility glass {
+  @apply border-slate-800/80 bg-slate-950/75 backdrop-blur-xl backdrop-saturate-150;
+}
+@utility skeleton {
+  @apply rounded-md;
+  background: linear-gradient(90deg, var(--color-slate-800) 0%, var(--color-slate-700) 50%, var(--color-slate-800) 100%);
+  background-size: 200% 100%;
+  animation: var(--animate-shimmer);
+  opacity: 0.5;
+}
+
+/* ── Forms ───────────────────────────────────────────────────── */
 @utility input {
-  @apply w-full rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-100 placeholder:text-slate-500 focus:border-sky-500 focus:outline-none;
+  @apply w-full rounded-lg border border-slate-700/80 bg-slate-950/70 px-3 py-2 text-sm text-slate-100 transition duration-150 placeholder:text-slate-500 hover:border-slate-600 focus:border-sky-500 focus:ring-4 focus:ring-sky-500/15 focus:outline-none;
 }
 @utility label {
-  @apply mb-1 block text-xs font-medium tracking-wide text-slate-400 uppercase;
+  @apply mb-1.5 block text-[11px] font-semibold tracking-wider text-slate-400 uppercase;
 }
+
+/* ── Buttons ─────────────────────────────────────────────────── */
 @utility btn {
-  @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition disabled:cursor-not-allowed disabled:opacity-50;
+  @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-medium whitespace-nowrap transition duration-150 select-none active:scale-[0.97] disabled:pointer-events-none disabled:opacity-45;
 }
 @utility btn-primary {
-  @apply btn bg-sky-600 text-white hover:bg-sky-500;
+  @apply btn bg-gradient-to-b from-sky-500 to-sky-600 text-white shadow-[0_1px_0_0_rgb(255_255_255/0.2)_inset,0_6px_18px_-6px_var(--color-sky-500)] hover:from-sky-400 hover:to-sky-500 hover:shadow-[0_1px_0_0_rgb(255_255_255/0.25)_inset,0_8px_24px_-6px_var(--color-sky-400)];
 }
 @utility btn-secondary {
-  @apply btn border border-slate-700 bg-slate-900 text-slate-200 hover:bg-slate-800;
+  @apply btn border border-slate-700/80 bg-slate-900/70 text-slate-200 hover:border-slate-600 hover:bg-slate-800/80 hover:text-white;
+}
+@utility btn-ghost {
+  @apply btn text-slate-400 hover:bg-slate-800/70 hover:text-slate-100;
 }
 @utility btn-danger {
-  @apply btn bg-rose-700 text-white hover:bg-rose-600;
+  @apply btn bg-gradient-to-b from-rose-600 to-rose-700 text-white shadow-[0_6px_18px_-8px_var(--color-rose-500)] hover:from-rose-500 hover:to-rose-600;
 }
+@utility icon-btn {
+  @apply inline-flex h-8 w-8 items-center justify-center rounded-lg text-slate-400 transition duration-150 hover:bg-slate-800/80 hover:text-slate-100 active:scale-90 disabled:pointer-events-none disabled:opacity-40;
+}
+
+/* ── Small pieces ────────────────────────────────────────────── */
 @utility badge {
-  @apply inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium;
+  @apply inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium ring-1 ring-white/5 ring-inset;
+}
+@utility kbd {
+  @apply inline-flex min-w-5 items-center justify-center rounded border border-slate-700 bg-slate-800/80 px-1 font-mono text-[10px] leading-4 text-slate-400 shadow-[0_1px_0_0_var(--color-slate-700)];
+}
+@utility chip {
+  @apply inline-flex items-center gap-1.5 rounded-full border border-slate-700/80 bg-slate-900/60 px-3 py-1.5 text-xs text-slate-300 transition duration-150 hover:-translate-y-px hover:border-sky-600/70 hover:bg-sky-950/40 hover:text-sky-100 active:scale-95;
 }
 @utility th {
-  @apply px-3 py-2 text-left text-xs font-semibold tracking-wide whitespace-nowrap text-slate-400 uppercase;
+  @apply px-3 py-2.5 text-left text-[11px] font-semibold tracking-wider whitespace-nowrap text-slate-500 uppercase;
 }
 @utility td {
-  @apply px-3 py-2 text-sm whitespace-nowrap;
+  @apply px-3 py-2.5 text-sm whitespace-nowrap;
+}
+@utility row {
+  @apply border-b border-slate-800/60 transition-colors duration-150 last:border-0 hover:bg-sky-950/20;
+}
+@utility text-gradient {
+  @apply bg-gradient-to-r from-slate-50 via-sky-200 to-sky-400 bg-clip-text text-transparent;
+}
+
+/* Staggered entrance for lists: style={{ "--i": index }} */
+.stagger > * {
+  animation: var(--animate-fade-up);
+  animation-delay: calc(min(var(--i, 0), 12) * 35ms);
 }
 
 /* Model prose rendered from markdown (sanitized). */
+.md { line-height: 1.65; }
 .md > * + * { margin-top: 0.6em; }
 .md h1 { font-size: 1.25rem; font-weight: 600; }
 .md h2 { font-size: 1.1rem; font-weight: 600; }
@@ -39,9 +184,10 @@
 .md ul { list-style: disc; padding-left: 1.4em; }
 .md ol { list-style: decimal; padding-left: 1.4em; }
 .md li + li { margin-top: 0.2em; }
+.md li::marker { color: var(--color-slate-500); }
 .md a { color: var(--color-sky-400); text-decoration: underline; text-underline-offset: 2px; word-break: break-all; }
 .md code { font-family: ui-monospace, monospace; font-size: 0.85em; background: var(--color-slate-800); padding: 0.1em 0.35em; border-radius: 4px; }
-.md blockquote { border-left: 3px solid var(--color-slate-700); padding-left: 0.8em; color: var(--color-slate-300); }
+.md blockquote { border-left: 3px solid var(--color-sky-800); padding-left: 0.8em; color: var(--color-slate-300); }
 .md hr { border-color: var(--color-slate-800); }
 .md table { border-collapse: collapse; font-size: 0.85em; display: block; overflow-x: auto; }
 .md th, .md td { border: 1px solid var(--color-slate-800); padding: 0.3em 0.6em; text-align: left; }

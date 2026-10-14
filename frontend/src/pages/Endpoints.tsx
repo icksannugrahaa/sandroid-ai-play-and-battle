@@ -2,7 +2,8 @@ import { useState } from "react";
 
 import { fetchModels } from "../api/client";
 import { CacheSetting } from "../components/cache";
-import { CostNotice, ErrorNote, errorKey, Field, PageHeader } from "../components/ui";
+import { Icon } from "../components/icons";
+import { CostNotice, EmptyState, ErrorNote, errorKey, Field, PageHeader } from "../components/ui";
 import { useT } from "../i18n";
 import { endpointLabel, useCredentials } from "../stores/credentials";
 import { useCacheStatus } from "../stores/sessionCache";
@@ -95,12 +96,13 @@ export default function Endpoints() {
   return (
     <div className="space-y-4">
       <PageHeader
+        icon="plug"
         title={t("endpoints.title")}
         subtitle={t("endpoints.subtitle")}
         actions={
           endpoints.length > 0 && (
-            <button type="button" className="btn-secondary" onClick={clearAll}>
-              {t("endpoints.clearAll")}
+            <button type="button" className="btn-secondary hover:border-rose-800 hover:text-rose-300" onClick={clearAll}>
+              <Icon name="trash" size={14} /> {t("endpoints.clearAll")}
             </button>
           )
         }
@@ -108,6 +110,22 @@ export default function Endpoints() {
       <CostNotice />
 
       <form className="card grid gap-3 md:grid-cols-[1fr_1.4fr_1.4fr_auto] md:items-end" onSubmit={add} autoComplete="off">
+        <div className="flex flex-wrap items-center gap-1.5 md:col-span-4">
+          <span className="label mb-0 mr-1">{t("endpoints.presets")}</span>
+          {PRESETS.map((p) => (
+            <button
+              key={p.url}
+              type="button"
+              className={`chip py-1 ${baseUrl === p.url ? "border-sky-500 bg-sky-950/60 text-sky-100" : ""}`}
+              onClick={() => {
+                setBaseUrl(p.url);
+                if (!label || PRESETS.some((x) => x.label === label)) setLabel(p.label);
+              }}
+            >
+              {p.label}
+            </button>
+          ))}
+        </div>
         <Field label={t("endpoints.label")}>
           <input className="input" value={label} placeholder={t("endpoints.labelPlaceholder")} onChange={(e) => setLabel(e.target.value)} />
         </Field>
@@ -145,20 +163,46 @@ export default function Endpoints() {
           />
         </Field>
         <button type="submit" className="btn-primary" disabled={!urlOk}>
-          {t("common.add")}
+          <Icon name="plus" size={15} /> {t("common.add")}
         </button>
         <p className="text-xs text-slate-500 md:col-span-4">{t("endpoints.apiKeyHint")}</p>
-        {baseUrl && !urlOk && <p className="text-xs text-rose-300 md:col-span-4">{t("endpoints.invalidUrl")}</p>}
+        {baseUrl && !urlOk && <p className="animate-slide-down text-xs text-rose-300 md:col-span-4">{t("endpoints.invalidUrl")}</p>}
       </form>
 
       <CacheSetting />
-      {restored && <p className="rounded-md border border-amber-800/60 bg-amber-950/40 px-3 py-2 text-xs text-amber-200">{t("endpoints.restoredNote")}</p>}
+      {restored && <p className="animate-slide-down rounded-xl border border-amber-800/60 bg-amber-950/40 px-3 py-2 text-xs text-amber-200">{t("endpoints.restoredNote")}</p>}
       {endpoints.length === 0 ? (
-        <p className="card text-sm text-slate-400">{t("endpoints.empty")}</p>
+        <div className="card">
+          <EmptyState icon="plug" title={t("endpoints.empty")} />
+        </div>
       ) : (
-        <ul className="space-y-2">
-          {endpoints.map((e) => (
-            <li key={e.id} className="card flex flex-wrap items-center gap-3">
+        <ul className="stagger space-y-2">
+          {endpoints.map((e, i) => {
+            const state = busy === e.id ? "testing" : errors[e.id] ? "error" : models[e.id] ? "ready" : "idle";
+            return (
+            <li key={e.id} className="card card-hover flex flex-wrap items-center gap-3" style={{ "--i": i } as React.CSSProperties}>
+              <span
+                className={`relative flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border ${
+                  state === "ready"
+                    ? "border-emerald-800/60 bg-emerald-950/40 text-emerald-300"
+                    : state === "error"
+                      ? "border-rose-800/60 bg-rose-950/40 text-rose-300"
+                      : "border-slate-700 bg-slate-900 text-slate-400"
+                }`}
+                title={state === "ready" ? t("endpoints.ready") : state === "idle" ? t("endpoints.untested") : undefined}
+              >
+                {state === "testing" ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-slate-600 border-t-sky-400" />
+                ) : (
+                  <Icon name={state === "error" ? "alert" : "plug"} />
+                )}
+                {state === "ready" && (
+                  <span className="absolute -top-0.5 -right-0.5 flex h-2.5 w-2.5">
+                    <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-60" />
+                    <span className="relative inline-flex h-2.5 w-2.5 rounded-full border-2 border-slate-900 bg-emerald-400" />
+                  </span>
+                )}
+              </span>
               <div className="min-w-0 flex-1">
                 <div className="font-medium">{endpointLabel(e)}</div>
                 <div className="truncate font-mono text-xs text-slate-500">
@@ -167,15 +211,27 @@ export default function Endpoints() {
                 {!e.apiKey && <KeyInput id={e.id} />}
                 <ErrorNote code={errors[e.id]} />
               </div>
-              {models[e.id] && <span className="badge bg-emerald-950 text-emerald-300">{t("endpoints.models", { n: models[e.id]!.length })}</span>}
+              {models[e.id] && (
+                <span key={models[e.id]!.length} className="badge animate-pop bg-emerald-950/70 text-emerald-300">
+                  {t("endpoints.models", { n: models[e.id]!.length })}
+                </span>
+              )}
               <button type="button" className="btn-secondary" disabled={busy === e.id} onClick={() => void test(e.id)}>
+                <Icon name="refresh" size={14} className={busy === e.id ? "animate-spin" : ""} />
                 {busy === e.id ? t("endpoints.testing") : t("endpoints.test")}
               </button>
-              <button type="button" className="btn-secondary hover:text-rose-300" onClick={() => removeEndpoint(e.id)}>
-                {t("common.remove")}
+              <button
+                type="button"
+                className="icon-btn hover:bg-rose-950/60 hover:text-rose-300"
+                title={t("common.remove")}
+                aria-label={t("common.remove")}
+                onClick={() => removeEndpoint(e.id)}
+              >
+                <Icon name="trash" />
               </button>
             </li>
-          ))}
+            );
+          })}
         </ul>
       )}
     </div>

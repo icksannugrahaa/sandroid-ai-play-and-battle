@@ -4,10 +4,10 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { getChallengeBoard, type ChallengeBoardParams } from "../api/client";
 import { CHALLENGES, challengeById, type Difficulty } from "../challenges";
 import { useLocal } from "../components/challenge";
-import { ErrorNote, errorKey, PageHeader, Segmented } from "../components/ui";
+import { EmptyState, ErrorNote, errorKey, PageHeader, Segmented, SkeletonRows } from "../components/ui";
 import { useLang, useT } from "../i18n";
 import { date, ms, num, pct, usd } from "../lib/format";
-import type { ChallengeBoardCell } from "../types";
+import type { ChallengeBoardCell, ChallengeBoardRow } from "../types";
 
 const LEVELS: Difficulty[] = ["easy", "medium", "hard", "expert"];
 const MEDALS = ["🥇", "🥈", "🥉"];
@@ -17,6 +17,68 @@ const MEDALS = ["🥇", "🥈", "🥉"];
  * models in a table took the same kind of test. Free prompts are not ranked — their difficulty
  * varies too much to compare.
  */
+const PODIUM = [
+  { ring: "border-amber-500/50 from-amber-500/15", glow: "shadow-[0_0_40px_-12px_var(--color-amber-400)]", lift: "md:-translate-y-3", text: "text-amber-300" },
+  { ring: "border-slate-400/40 from-slate-400/10", glow: "", lift: "", text: "text-slate-200" },
+  { ring: "border-orange-700/50 from-orange-700/10", glow: "", lift: "", text: "text-orange-300" },
+];
+
+/** Top three as cards — 1st in the middle, raised. */
+function Podium({ rows }: { rows: ChallengeBoardRow[] }) {
+  const t = useT();
+  const top = rows.slice(0, 3);
+  if (top.length < 2) return null;
+  const order = top.length === 3 ? [1, 0, 2] : [0, 1];
+  return (
+    <div className={`grid items-end gap-3 ${top.length === 3 ? "md:grid-cols-3" : "md:grid-cols-2"}`}>
+      {order.map((idx, pos) => {
+        const r = top[idx]!;
+        const look = PODIUM[idx]!;
+        return (
+          <div
+            key={r.key}
+            className={`card card-hover relative animate-fade-up overflow-hidden bg-gradient-to-b to-transparent text-center ${look.ring} ${look.glow} ${look.lift}`}
+            style={{ animationDelay: `${pos * 90}ms` }}
+          >
+            <div className="text-3xl">{MEDALS[idx]}</div>
+            <div className="mt-1 truncate font-semibold text-slate-100" title={r.display_name}>
+              {r.display_name}
+            </div>
+            <div className="truncate text-[11px] text-slate-500">{r.family}</div>
+            <div className={`mt-3 font-mono text-3xl font-semibold tabular-nums ${look.text}`}>{num(r.avg_score, 1)}</div>
+            <div className="text-[11px] tracking-wider text-slate-500 uppercase">{t("board.col.score")}</div>
+            <div className="mt-3 flex justify-center gap-4 text-xs text-slate-400">
+              <span>
+                <span className="font-mono text-slate-200">{pct(r.solve_rate)}</span> {t("board.col.solved").toLowerCase()}
+              </span>
+              <span>
+                <span className="font-mono text-slate-200">{r.runs}</span> {t("leaderboard.col.runs").toLowerCase()}
+              </span>
+            </div>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
+/** Score bar that grows in when it mounts or the value changes. */
+function ScoreBar({ value }: { value: number }) {
+  const [w, setW] = useState(0);
+  useEffect(() => {
+    const id = requestAnimationFrame(() => setW(Math.max(0, Math.min(100, value))));
+    return () => cancelAnimationFrame(id);
+  }, [value]);
+  return (
+    <span className="h-1.5 w-24 overflow-hidden rounded-full bg-slate-800">
+      <span
+        className="block h-full rounded-full bg-gradient-to-r from-sky-600 to-sky-400 transition-[width] duration-700 ease-[var(--ease-out-soft)]"
+        style={{ width: `${w}%` }}
+      />
+    </span>
+  );
+}
+
 export default function Leaderboard() {
   const t = useT();
   const local = useLocal();
@@ -63,6 +125,7 @@ export default function Leaderboard() {
   return (
     <div className="space-y-4">
       <PageHeader
+        icon="trophy"
         title={t("leaderboard.title")}
         subtitle={t("board.subtitle")}
         actions={
@@ -87,17 +150,17 @@ export default function Leaderboard() {
                 key={c.id}
                 type="button"
                 onClick={() => pick(c.id)}
-                className={`flex items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs transition ${
+                className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs transition duration-150 active:scale-95 ${
                   active
-                    ? "border-sky-600 bg-sky-950/50 text-slate-100"
+                    ? "border-sky-500 bg-sky-500/15 text-white shadow-[0_0_16px_-6px_var(--color-sky-400)]"
                     : n
-                      ? "border-slate-700 bg-slate-900/60 text-slate-300 hover:border-slate-500"
-                      : "border-slate-800 text-slate-500 hover:border-slate-600"
+                      ? "border-slate-700 bg-slate-900/60 text-slate-300 hover:-translate-y-px hover:border-slate-500"
+                      : "border-slate-800 text-slate-500 hover:-translate-y-px hover:border-slate-600"
                 }`}
               >
                 <span>{c.icon}</span>
                 {local(c.title)}
-                {n > 0 && <span className="font-mono text-[10px] text-slate-500">{n}</span>}
+                {n > 0 && <span className={`rounded-full px-1.5 font-mono text-[10px] ${active ? "bg-sky-500/25 text-sky-100" : "bg-slate-800 text-slate-400"}`}>{n}</span>}
               </button>
             );
           })}
@@ -146,6 +209,8 @@ export default function Leaderboard() {
         <p className="text-[11px] text-slate-500">{t("board.ranking")}</p>
       </section>
 
+      <Podium key={`${params.challenge}-${params.difficulty}-${params.grouping}`} rows={rows} />
+
       <section className="card overflow-x-auto p-0">
         {challenge && (
           <div className="flex items-center gap-2 border-b border-slate-800 px-4 py-3 text-sm">
@@ -172,9 +237,9 @@ export default function Leaderboard() {
               <th className="th">{t("leaderboard.col.last")}</th>
             </tr>
           </thead>
-          <tbody className={query.isFetching ? "opacity-60" : ""}>
-            {rows.map((r) => (
-              <tr key={r.key} className="border-b border-slate-900 hover:bg-slate-900/50">
+          <tbody className={`stagger transition-opacity ${query.isFetching ? "opacity-60" : ""}`}>
+            {rows.map((r, i) => (
+              <tr key={r.key} className="row" style={{ "--i": i } as React.CSSProperties}>
                 <td className="td text-slate-400">{MEDALS[r.rank - 1] ?? r.rank}</td>
                 <td className="td">
                   <div className="font-medium">{r.display_name}</div>
@@ -186,9 +251,7 @@ export default function Leaderboard() {
                 <td className="td">
                   <div className="flex items-center gap-2">
                     <span className="w-10 font-mono text-slate-100">{num(r.avg_score, 1)}</span>
-                    <span className="h-1.5 w-20 overflow-hidden rounded bg-slate-800">
-                      <span className="block h-full bg-sky-500" style={{ width: `${Math.max(0, Math.min(100, r.avg_score))}%` }} />
-                    </span>
+                    <ScoreBar value={r.avg_score} />
                   </div>
                 </td>
                 <td className="td font-mono">{pct(r.solve_rate)}</td>
@@ -204,8 +267,8 @@ export default function Leaderboard() {
             ))}
           </tbody>
         </table>
-        {!query.isLoading && rows.length === 0 && <p className="p-6 text-center text-sm text-slate-500">{t("board.empty")}</p>}
-        {query.isLoading && <p className="p-6 text-center text-sm text-slate-500">{t("common.loading")}</p>}
+        {!query.isLoading && rows.length === 0 && <EmptyState icon="trophy" title={t("board.empty")} />}
+        {query.isLoading && <SkeletonRows cols={6} />}
       </section>
       {query.error && <ErrorNote code={errorKey(query.error)} />}
     </div>

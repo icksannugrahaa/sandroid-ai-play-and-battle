@@ -32,18 +32,21 @@ export function useLocal() {
 export function ChallengeGallery({ value, onPick, compact }: { value: string; onPick: (id: string) => void; compact?: boolean }) {
   const local = useLocal();
   return (
-    <div className={`grid gap-2 ${compact ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"}`}>
-      {CHALLENGES.map((c) => (
+    <div className={`stagger grid gap-2 ${compact ? "grid-cols-2 sm:grid-cols-3 lg:grid-cols-5" : "sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"}`}>
+      {CHALLENGES.map((c, i) => (
         <button
           key={c.id}
           type="button"
           onClick={() => onPick(c.id)}
-          className={`rounded-lg border p-3 text-left transition ${
-            value === c.id ? "border-sky-600 bg-sky-950/40" : "border-slate-800 bg-slate-900/40 hover:border-slate-600"
+          style={{ "--i": i } as React.CSSProperties}
+          className={`group rounded-xl border p-3 text-left transition duration-200 hover:-translate-y-0.5 active:scale-[0.98] ${
+            value === c.id
+              ? "border-sky-500 bg-sky-500/10 shadow-[0_0_24px_-10px_var(--color-sky-400)]"
+              : "border-slate-800 bg-slate-900/40 hover:border-slate-600 hover:bg-slate-900/70"
           }`}
         >
           <div className="flex items-center gap-2">
-            <span className="text-lg leading-none">{c.icon}</span>
+            <span className="text-lg leading-none transition-transform duration-200 group-hover:scale-125">{c.icon}</span>
             <span className="text-sm font-medium text-slate-100">{local(c.title)}</span>
           </div>
           {!compact && <p className="mt-1.5 text-xs text-slate-400">{local(c.blurb)}</p>}
