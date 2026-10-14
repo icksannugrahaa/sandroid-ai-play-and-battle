@@ -4,6 +4,12 @@ on:
   push:
     branches: [main]
   pull_request:
+    branches: [main]
+
+# Only the latest run per branch/PR matters; cancel superseded runs.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
