@@ -1,1 +1,38 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32"><rect width="32" height="32" rx="7" fill="#0f172a"/><path d="M9 21l5-10 4 7 2-3 3 6" fill="none" stroke="#38bdf8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="Sandroid">
+  <defs>
+    <linearGradient id="sandroidBlue" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7dd3fc" />
+      <stop offset="100%" stop-color="#38bdf8" />
+    </linearGradient>
+    <filter id="sandroidGlow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="0.7" result="blur" />
+      <feComposite in="SourceGraphic" in2="blur" operator="over" />
+    </filter>
+  </defs>
+
+  <rect width="32" height="32" rx="7" fill="#0f172a" />
+
+  <!-- Stylised "S" -->
+  <path
+    d="M23 9.5 L13.5 9.5 A3.5 3.5 0 0 0 10 13 L10 13.8 A2.6 2.6 0 0 0 12.6 16.4 L19.4 16.4 A2.6 2.6 0 0 1 22 19 L22 19.8 A3.5 3.5 0 0 1 18.5 23.3 L9 23.3"
+    fill="none"
+    stroke="url(#sandroidBlue)"
+    stroke-width="2.4"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+    filter="url(#sandroidGlow)"
+  />
+
+  <!-- Terminal dots -->
+  <circle cx="23" cy="9.5" r="1.05" fill="#7dd3fc" />
+  <circle cx="9" cy="23.3" r="1.05" fill="#7dd3fc" />
+
+  <!-- Android head -->
+  <g transform="translate(16, 16)">
+    <line x1="-2.6" y1="-4" x2="-4.3" y2="-7" stroke="url(#sandroidBlue)" stroke-width="1.15" stroke-linecap="round" />
+    <line x1="2.6" y1="-4" x2="4.3" y2="-7" stroke="url(#sandroidBlue)" stroke-width="1.15" stroke-linecap="round" />
+    <path d="M -5 -1.6 A 5 5 0 0 1 5 -1.6 Z" fill="url(#sandroidBlue)" />
+    <circle cx="-1.9" cy="-2.3" r="0.85" fill="#0f172a" />
+    <circle cx="1.9" cy="-2.3" r="0.85" fill="#0f172a" />
+  </g>
+</svg>
