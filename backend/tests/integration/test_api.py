@@ -186,10 +186,12 @@ async def test_body_size_limit(client: httpx.AsyncClient) -> None:
 
 
 async def test_rate_limit(settings, container: Container) -> None:
+    from app.infrastructure.security.rate_limit import TokenBucketLimiter
     from app.main import create_app
 
-    settings.rate_limit_read_per_min = 2
-    container.limiters.read.capacity = 2
+    # Capacity 2, no refill: the budget must not be replenished mid-test, otherwise the
+    # continuous token-bucket refill makes the 3rd call pass on a slow/loaded machine.
+    container.limiters.read = TokenBucketLimiter(per_minute=0, burst=2)
     app = create_app(settings, container_factory=lambda _s: container)
     async with (
         app.router.lifespan_context(app),
