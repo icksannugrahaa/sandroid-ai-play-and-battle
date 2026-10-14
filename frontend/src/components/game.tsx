@@ -243,8 +243,8 @@ export function CodeRunnerModal({ project, onClose }: { project: GameProject; on
   }, []);
   // Portal: an ancestor with backdrop-filter (the sticky composer) would trap `position: fixed`.
   return createPortal(
-    <div className="fixed inset-0 z-[65] flex bg-black/75 p-2 sm:p-6" role="dialog" aria-modal="true" onClick={onClose}>
-      <div className="flex min-h-0 w-full flex-col gap-2 overflow-hidden rounded-xl border border-slate-700 bg-slate-950 p-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 z-[65] flex animate-fade-in bg-slate-950/80 p-2 backdrop-blur-sm sm:p-6" role="dialog" aria-modal="true" onClick={onClose}>
+      <div className="flex min-h-0 w-full animate-scale-in flex-col gap-2 overflow-hidden rounded-2xl border border-slate-700 bg-slate-950 p-3 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center gap-3">
           <span className="text-sm font-medium">▶ {t("runner.title")}</span>
           <span className="text-xs text-slate-500">{t("runner.subtitle")}</span>

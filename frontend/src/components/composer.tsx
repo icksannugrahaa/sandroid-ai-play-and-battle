@@ -13,7 +13,8 @@ import { RUNTIME_HINT } from "../lib/runtimeHint";
 import { usePrefs } from "../stores/prefs";
 import type { GenerationParams } from "../types";
 import { CodeRunnerModal } from "./game";
-import { Field, ParamsPanel } from "./ui";
+import { Icon } from "./icons";
+import { Field, ParamsPanel, Segmented, Switch } from "./ui";
 
 const ICON: Record<Draft["kind"], string> = { image: "🖼", audio: "🔊", text: "📄", file: "📎" };
 
@@ -81,9 +82,9 @@ export function Composer({
   return (
     <div className="space-y-1.5">
       <div
-        className={`rounded-xl border bg-slate-950 transition focus-within:border-sky-600 ${
-          dragging ? "border-sky-500 bg-sky-950/30" : "border-slate-700"
-        }`}
+        className={`relative rounded-2xl border bg-slate-950/80 shadow-[0_10px_40px_-18px_rgb(0_0_0/0.9)] transition duration-200 focus-within:border-sky-600/80 focus-within:shadow-[0_0_0_4px_rgb(14_165_233/0.12),0_10px_40px_-18px_rgb(14_165_233/0.5)] ${
+          dragging ? "border-sky-500 bg-sky-950/30" : "border-slate-700/80 hover:border-slate-600"
+        } ${running ? "border-sky-800/70" : ""}`}
         onDragOver={(e) => {
           if (!attachable) return;
           e.preventDefault();
@@ -96,10 +97,15 @@ export function Composer({
           void add([...e.dataTransfer.files]);
         }}
       >
+        {dragging && (
+          <div className="pointer-events-none absolute inset-1 z-10 flex animate-fade-in items-center justify-center gap-2 rounded-xl border-2 border-dashed border-sky-500/70 bg-sky-950/70 text-sm text-sky-200 backdrop-blur-sm">
+            <Icon name="upload" className="animate-float" /> {t("composer.attachHint")}
+          </div>
+        )}
         {drafts.length > 0 && (
           <div className="flex flex-wrap gap-2 px-3 pt-3">
             {drafts.map((d) => (
-              <div key={d.id} className="group relative flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-900 py-1 pr-7 pl-1 text-xs">
+              <div key={d.id} className="group relative flex animate-scale-in items-center gap-2 rounded-xl border border-slate-700 bg-slate-900 py-1 pr-7 pl-1 text-xs">
                 {d.kind === "image" && d.dataUrl ? (
                   <img src={d.dataUrl} alt="" className="h-9 w-9 rounded object-cover" />
                 ) : (
@@ -116,10 +122,10 @@ export function Composer({
                 <button
                   type="button"
                   aria-label={t("common.remove")}
-                  className="absolute top-1 right-1 h-5 w-5 rounded-full text-slate-400 hover:bg-rose-800 hover:text-white"
+                  className="absolute top-1 right-1 inline-flex h-5 w-5 items-center justify-center rounded-full text-slate-400 transition hover:bg-rose-700 hover:text-white"
                   onClick={() => onDrafts(drafts.filter((x) => x.id !== d.id))}
                 >
-                  ×
+                  <Icon name="x" size={12} />
                 </button>
               </div>
             ))}
@@ -131,7 +137,7 @@ export function Composer({
           value={text}
           placeholder={mode === "image_gen" ? t("composer.placeholderImage") : t("composer.placeholder")}
           title={t("composer.keys")}
-          className="block w-full resize-none bg-transparent px-4 pt-3 pb-1 text-sm text-slate-100 placeholder:text-slate-500 focus:outline-none"
+          className="block w-full resize-none bg-transparent px-4 pt-3.5 pb-1 text-sm leading-relaxed text-slate-100 placeholder:text-slate-500 focus:outline-none"
           onChange={(e) => onText(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter" && !e.shiftKey && !e.nativeEvent.isComposing) {
@@ -153,10 +159,10 @@ export function Composer({
               <button
                 type="button"
                 title={t("composer.attachHint")}
-                className="rounded-lg px-2 py-1.5 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+                className="btn-ghost px-2 py-1.5 text-xs"
                 onClick={() => picker.current?.click()}
               >
-                📎 <span className="text-xs">{t("composer.attach")}</span>
+                <Icon name="clip" size={15} /> {t("composer.attach")}
               </button>
               <input
                 ref={picker}
@@ -170,37 +176,41 @@ export function Composer({
               />
             </>
           )}
-          <div className="inline-flex rounded-lg border border-slate-800 p-0.5 text-xs">
-            {(["chat", "image_gen"] as const).map((m) => (
-              <button
-                key={m}
-                type="button"
-                onClick={() => onMode(m)}
-                className={`rounded-md px-2 py-1 ${mode === m ? "bg-slate-800 text-white" : "text-slate-400 hover:text-slate-200"}`}
-              >
-                {t(m === "chat" ? "mode.chat" : "mode.image_gen")}
-              </button>
-            ))}
-          </div>
+          <Segmented
+            size="sm"
+            value={mode}
+            onChange={onMode}
+            options={[
+              { value: "chat", label: t("mode.chat") },
+              { value: "image_gen", label: t("mode.image_gen") },
+            ]}
+          />
           {runnable && (
             <button
               type="button"
               title={t("runner.hint")}
-              className="rounded-lg border border-emerald-800 bg-emerald-950/40 px-2.5 py-1.5 text-xs text-emerald-300 hover:bg-emerald-900/50"
+              className="btn animate-scale-in border border-emerald-800 bg-emerald-950/40 px-2.5 py-1.5 text-xs text-emerald-300 hover:bg-emerald-900/50"
               onClick={() => setRunnerOpen(true)}
             >
-              ▶ {t("runner.button")}
+              <Icon name="play" size={12} /> {t("runner.button")}
             </button>
           )}
           <span className="flex-1" />
-          <span className="hidden text-[11px] text-slate-500 2xl:inline">{t("composer.keys")}</span>
+          <span className="hidden text-[11px] text-slate-500 xl:inline">{t("composer.keys")}</span>
           {running ? (
-            <button type="button" className="btn-danger py-1.5" onClick={onStop}>
-              ■ {t("common.stop")}
+            <button type="button" className="btn-danger animate-scale-in py-1.5" onClick={onStop}>
+              <span className="relative flex h-3 w-3 items-center justify-center">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-sm bg-white/50" />
+                <Icon name="stop" size={10} className="fill-current" />
+              </span>
+              {t("common.stop")}
             </button>
           ) : (
-            <button type="button" className="btn-primary py-1.5" disabled={!canSend} onClick={send}>
-              {sendLabel} ↑
+            <button type="button" className="btn-primary group py-1.5 pr-2.5" disabled={!canSend} onClick={send}>
+              {sendLabel}
+              <span className="inline-flex h-5 w-5 items-center justify-center rounded-md bg-white/15 transition-transform duration-200 group-hover:-translate-y-0.5">
+                <Icon name="send" size={13} strokeWidth={2.4} />
+              </span>
             </button>
           )}
         </div>
@@ -252,8 +262,8 @@ export function AdvancedSettings({
   const t = useT();
   const active = !!system.trim() || Object.values(params).some((v) => v !== undefined);
   return (
-    <details className="rounded-lg border border-slate-800 px-3 py-2" open={defaultOpen}>
-      <summary className="cursor-pointer text-sm text-slate-400">
+    <details className="rounded-xl border border-slate-800 bg-slate-950/40 px-3 py-2" open={defaultOpen}>
+      <summary className="cursor-pointer text-sm text-slate-400 hover:text-slate-200">
         {t("composer.advanced")}
         {active && <span className="ml-2 badge bg-sky-950 text-sky-300">{t("composer.customized")}</span>}
       </summary>
@@ -286,15 +296,15 @@ function RuntimeHintToggle() {
   const t = useT();
   const { runtimeHint, setRuntimeHint } = usePrefs();
   return (
-    <div className="rounded-lg border border-emerald-900/50 bg-emerald-950/20 px-3 py-2 text-xs">
-      <label className="flex items-start gap-2">
-        <input type="checkbox" className="mt-0.5 accent-emerald-500" checked={runtimeHint} onChange={(e) => setRuntimeHint(e.target.checked)} />
+    <div className="rounded-xl border border-emerald-900/50 bg-emerald-950/20 px-3 py-2 text-xs">
+      <label className="flex items-start gap-2.5">
+        <Switch checked={runtimeHint} onChange={setRuntimeHint} />
         <span>
           <span className="font-medium text-emerald-200">{t("hint.label")}</span>
           <span className="block text-slate-400">{t("hint.description")}</span>
         </span>
       </label>
-      <details className="mt-1 ml-6">
+      <details className="mt-1 ml-11">
         <summary className="cursor-pointer text-slate-500">{t("hint.show")}</summary>
         <p className="mt-1 font-mono text-[11px] leading-relaxed text-slate-400">{RUNTIME_HINT}</p>
       </details>

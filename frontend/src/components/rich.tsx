@@ -388,7 +388,7 @@ export function UserBubble({ text }: { text: string }) {
   const hasCode = text.includes("```") || /^\s*<(!doctype|html)/i.test(text);
   return (
     <div
-      className={`ml-auto rounded-2xl rounded-br-md bg-sky-900/40 px-4 py-2.5 ${hasCode ? "w-full" : "w-fit max-w-[85%]"}`}
+      className={`ml-auto animate-fade-up rounded-2xl rounded-br-md border border-sky-800/40 bg-gradient-to-br from-sky-800/40 to-sky-900/30 px-4 py-2.5 shadow-[0_8px_24px_-16px_var(--color-sky-500)] ${hasCode ? "w-full" : "w-fit max-w-[85%]"}`}
     >
       <div className={hasCode ? "" : "max-h-80 overflow-y-auto"}>
         <RichText text={text} />

@@ -5,7 +5,8 @@ import { AdvancedSettings, Composer } from "../components/composer";
 import { StorageMeter } from "../components/game";
 import { UserBubble } from "../components/rich";
 import { AssistantMessage, emptySlotView, ModelPicker, useEndpointDefault } from "../components/run";
-import { ErrorNote, RunOptions } from "../components/ui";
+import { Icon } from "../components/icons";
+import { Collapse, EmptyState, ErrorNote, IconTile, RunOptions } from "../components/ui";
 import { UsageMini, UsageSummary } from "../components/usage";
 import { useT } from "../i18n";
 import { useCredentials } from "../stores/credentials";
@@ -68,42 +69,60 @@ export default function Playground() {
 
   return (
     <ScopeContext.Provider value="playground">
-      <div className="flex min-h-[calc(100vh-9rem)] flex-col">
-        <div className="mb-4 flex flex-wrap items-center gap-3">
-          <h1 className="text-xl font-semibold tracking-tight">{t("playground.title")}</h1>
-          {s.model && <span className="badge bg-slate-800 font-mono text-slate-300">{s.model}</span>}
+      <div className="flex min-h-[calc(100vh-7rem)] flex-col">
+        <div className="mb-5 flex flex-wrap items-center gap-3">
+          <IconTile name="chat" />
+          <h1 className="text-2xl font-semibold tracking-tight text-gradient">{t("playground.title")}</h1>
+          {s.model && (
+            <span key={s.model} className="badge animate-scale-in bg-sky-950/60 font-mono text-sky-200">
+              <span className={`h-1.5 w-1.5 rounded-full ${s.running ? "animate-pulse bg-sky-400" : "bg-emerald-400"}`} />
+              {s.model}
+            </span>
+          )}
           <span className="flex-1" />
           {s.lastEntry && (
             <button
               type="button"
-              className="btn-secondary py-1 text-xs"
+              className="btn-ghost py-1 text-xs"
               onClick={() => s.lastEntry && downloadJson(`run-${s.lastEntry.id}.json`, buildExport([s.lastEntry]))}
             >
-              {t("common.export")}
+              <Icon name="download" size={14} /> {t("common.export")}
             </button>
           )}
           {!empty && !s.running && (
-            <button type="button" className="btn-secondary py-1 text-xs" onClick={s.newChat}>
-              + {t("playground.newChat")}
+            <button type="button" className="btn-secondary animate-scale-in py-1 text-xs" onClick={s.newChat}>
+              <Icon name="plus" size={14} /> {t("playground.newChat")}
             </button>
           )}
         </div>
 
         <div className="flex-1 space-y-5 pb-6">
           {empty && (
-            <div className="flex min-h-[35vh] flex-col items-center justify-center gap-2 text-center">
-              <p className="text-lg text-slate-300">{t("playground.emptyTitle")}</p>
-              <p className="max-w-xl text-sm text-slate-500">{t("playground.emptyHint")}</p>
+            <div className="flex min-h-[38vh] items-center justify-center">
+              <EmptyState icon="sparkles" title={t("playground.emptyTitle")} hint={t("playground.emptyHint")}>
+                {(["game", "anim", "explain", "code"] as const).map((k, i) => (
+                  <button
+                    key={k}
+                    type="button"
+                    className="chip animate-fade-up"
+                    style={{ animationDelay: `${150 + i * 60}ms` }}
+                    onClick={() => s.setForm({ prompt: t(`suggest.${k}`) })}
+                  >
+                    <Icon name={k === "game" ? "play" : k === "anim" ? "sparkles" : k === "code" ? "code" : "chat"} size={13} className="text-sky-400" />
+                    {t(`suggest.${k}`)}
+                  </button>
+                ))}
+              </EmptyState>
             </div>
           )}
           {turns.map((turn) => (
-            <div key={turn.id} className="space-y-3">
+            <div key={turn.id} className="animate-fade-up space-y-3">
               <UserBubble text={turn.text} />
               <AssistantMessage result={turn.result} requestError={turn.requestError} />
             </div>
           ))}
           {s.running && live && (
-            <div className="space-y-3">
+            <div className="animate-fade-up space-y-3">
               {s.pendingText && <UserBubble text={s.pendingText} />}
               <AssistantMessage result={live} />
             </div>
@@ -113,7 +132,7 @@ export default function Playground() {
         </div>
 
         {/* Composer + every setting below it, pinned to the bottom like a chat app. */}
-        <div className="sticky bottom-0 z-20 -mx-4 border-t border-slate-800 bg-slate-950/95 px-4 pt-3 pb-4 backdrop-blur">
+        <div className="glass sticky bottom-0 z-20 -mx-4 border-t px-4 pt-3 pb-4 lg:-mx-8 lg:px-8">
           <Composer
             text={s.prompt}
             onText={(prompt) => s.setForm({ prompt })}
@@ -132,17 +151,18 @@ export default function Playground() {
             <button
               type="button"
               aria-expanded={settingsOpen}
-              className={`btn-secondary py-1.5 text-xs ${settingsOpen ? "border-sky-700 text-sky-300" : ""}`}
+              className={`btn-secondary py-1.5 text-xs ${settingsOpen ? "border-sky-700 bg-sky-950/40 text-sky-200" : ""}`}
               onClick={() => setSettingsOpen((v) => !v)}
             >
-              ⚙ {t("playground.settings")}
-              {customized && <span className="h-1.5 w-1.5 rounded-full bg-sky-400" />}
+              <Icon name="settings" size={14} className={`transition-transform duration-500 ${settingsOpen ? "rotate-90" : ""}`} />
+              {t("playground.settings")}
+              {customized && <span className="h-1.5 w-1.5 animate-pop rounded-full bg-sky-400" />}
             </button>
             <UsageMini usage={s.usage} />
           </div>
           {mismatch && <p className="mt-1.5 text-xs text-amber-300">{t("playground.capabilityMismatch", { mode: t(`mode.${needed}`) })}</p>}
-          {settingsOpen && (
-            <div className="mt-3 max-h-[45vh] space-y-3 overflow-y-auto rounded-lg border border-slate-800 bg-slate-900/60 p-3">
+          <Collapse open={settingsOpen}>
+            <div className="mt-3 max-h-[45vh] space-y-3 overflow-y-auto rounded-xl border border-slate-800 bg-slate-900/60 p-3">
               <AdvancedSettings
                 defaultOpen
                 mode={s.mode}
@@ -163,7 +183,7 @@ export default function Playground() {
               <UsageSummary usage={s.usage} onReset={s.resetUsage} />
               <p className="text-[11px] text-slate-500">{t("notice.billing")}</p>
             </div>
-          )}
+          </Collapse>
         </div>
       </div>
     </ScopeContext.Provider>

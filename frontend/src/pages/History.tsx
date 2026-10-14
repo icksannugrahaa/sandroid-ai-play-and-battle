@@ -1,7 +1,8 @@
 import { useMemo, useRef, useState } from "react";
 
 import { OutputView, ResultsTable, StatusBadge } from "../components/run";
-import { PageHeader } from "../components/ui";
+import { Icon } from "../components/icons";
+import { Collapse, EmptyState, PageHeader, SearchInput, Segmented } from "../components/ui";
 import { useLang, useT } from "../i18n";
 import { ScopeContext } from "../stores/gameStorage";
 import { bytes, date } from "../lib/format";
@@ -46,26 +47,27 @@ export default function History() {
     <ScopeContext.Provider value="history">
     <div className="space-y-4">
       <PageHeader
+        icon="history"
         title={t("history.title")}
         subtitle={t("history.subtitle")}
         actions={
           <>
             <button type="button" className="btn-secondary" onClick={() => fileInput.current?.click()}>
-              {t("history.import")}
+              <Icon name="upload" size={14} /> {t("history.import")}
             </button>
             <input ref={fileInput} type="file" accept="application/json,.json" className="hidden" onChange={(e) => void importFile(e.target.files?.[0])} />
             <button type="button" className="btn-secondary" disabled={!entries.length} onClick={() => downloadJson(`sandroid-history-${new Date().toISOString().slice(0, 10)}.json`, buildExport(entries))}>
-              {t("history.exportAll")}
+              <Icon name="download" size={14} /> {t("history.exportAll")}
             </button>
             <button
               type="button"
-              className="btn-secondary"
+              className="btn-secondary hover:border-rose-800 hover:text-rose-300"
               disabled={!entries.length}
               onClick={() => {
                 if (window.confirm(t("history.clearConfirm"))) clear();
               }}
             >
-              {t("common.clear")}
+              <Icon name="trash" size={14} /> {t("common.clear")}
             </button>
           </>
         }
@@ -76,31 +78,59 @@ export default function History() {
           <div className="mb-1 flex justify-between text-xs text-slate-400">
             <span>{t("history.capacity", { n: entries.length, max: HISTORY_LIMIT, size: bytes(size) })}</span>
           </div>
-          <div className="h-1.5 rounded-full bg-slate-800">
-            <div className="h-1.5 rounded-full bg-sky-600" style={{ width: `${(entries.length / HISTORY_LIMIT) * 100}%` }} />
+          <div className="h-1.5 overflow-hidden rounded-full bg-slate-800">
+            <div
+              className="h-1.5 rounded-full bg-gradient-to-r from-sky-600 to-sky-400 transition-[width] duration-700 ease-[var(--ease-out-soft)]"
+              style={{ width: `${(entries.length / HISTORY_LIMIT) * 100}%` }}
+            />
           </div>
         </div>
-        <input className="input max-w-xs" placeholder={t("common.search")} value={filter} onChange={(e) => setFilter(e.target.value)} />
-        <select className="input w-auto" value={kind} onChange={(e) => setKind(e.target.value as typeof kind)}>
-          <option value="">{t("common.all")}</option>
-          <option value="playground">{t("history.kind.playground")}</option>
-          <option value="arena">{t("history.kind.arena")}</option>
-        </select>
+        <SearchInput value={filter} onChange={setFilter} />
+        <Segmented
+          size="sm"
+          value={kind || "all"}
+          onChange={(v) => setKind(v === "all" ? "" : v)}
+          options={[
+            { value: "all", label: t("common.all") },
+            { value: "playground", label: t("history.kind.playground") },
+            { value: "arena", label: t("history.kind.arena") },
+          ]}
+        />
       </div>
 
       {lastError && <p className="text-sm text-amber-300">{t("history.storageError")}</p>}
-      {message && <p className={`text-sm ${message.ok ? "text-emerald-300" : "text-rose-300"}`}>{message.text}</p>}
-      {entries.length === 0 && <p className="card text-sm text-slate-400">{t("history.empty")}</p>}
+      {message && <p className={`animate-slide-down text-sm ${message.ok ? "text-emerald-300" : "text-rose-300"}`}>{message.text}</p>}
+      {entries.length === 0 && (
+        <div className="card">
+          <EmptyState icon="history" title={t("history.empty")} />
+        </div>
+      )}
 
-      <ul className="space-y-2">
-        {visible.map((e) => (
-          <li key={e.id} className="card p-0">
-            <button type="button" className="flex w-full items-center gap-3 p-3 text-left" onClick={() => setExpanded(expanded === e.id ? null : e.id)}>
-              <span className="badge bg-slate-800 text-slate-300">{t(`history.kind.${e.kind}`)}</span>
+      <ul className="stagger space-y-2">
+        {visible.map((e, i) => (
+          <li
+            key={e.id}
+            className={`card overflow-hidden p-0 transition-colors duration-200 ${expanded === e.id ? "border-sky-800/60" : "hover:border-slate-700"}`}
+            style={{ "--i": i } as React.CSSProperties}
+          >
+            <button
+              type="button"
+              aria-expanded={expanded === e.id}
+              className="group flex w-full items-center gap-3 p-3 text-left"
+              onClick={() => setExpanded(expanded === e.id ? null : e.id)}
+            >
+              <span
+                className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${e.kind === "arena" ? "border-fuchsia-900/60 bg-fuchsia-950/30 text-fuchsia-300" : "border-sky-900/60 bg-sky-950/30 text-sky-300"}`}
+                title={t(`history.kind.${e.kind}`)}
+              >
+                <Icon name={e.kind === "arena" ? "swords" : "chat"} size={15} />
+              </span>
               <span className="min-w-0 flex-1 truncate text-sm">{e.config.prompt}</span>
               <span className="hidden truncate text-xs text-slate-500 sm:block">{e.results.map((r) => r.model).join(" · ")}</span>
               <span className="text-xs whitespace-nowrap text-slate-500">{date(e.createdAt, lang)}</span>
+              <Icon name="chevron" size={15} className={`shrink-0 text-slate-500 transition-transform duration-300 group-hover:text-slate-300 ${expanded === e.id ? "rotate-90" : ""}`} />
             </button>
+            <Collapse open={expanded === e.id}>
             {expanded === e.id && (
               <div className="space-y-3 border-t border-slate-800 p-3">
                 {e.config.system && <p className="text-xs text-slate-400">System: {e.config.system}</p>}
@@ -120,7 +150,7 @@ export default function History() {
                 </div>
                 <div className="flex flex-wrap gap-2">
                   <button type="button" className="btn-secondary py-1 text-xs" onClick={() => openDraft(e)}>
-                    {t("history.rerun")}
+                    <Icon name="refresh" size={13} /> {t("history.rerun")}
                   </button>
                   <button type="button" className="btn-secondary py-1 text-xs" onClick={() => downloadJson(`${e.kind}-${e.id}.json`, buildExport([e]))}>
                     {t("common.export")}
@@ -131,6 +161,7 @@ export default function History() {
                 </div>
               </div>
             )}
+            </Collapse>
           </li>
         ))}
       </ul>

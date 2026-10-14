@@ -6,6 +6,7 @@ import { useT } from "../i18n";
 import { ms, num, usd } from "../lib/format";
 import { endpointLabel, useCredentials } from "../stores/credentials";
 import type { FetchedModel, Modality, RunMetrics, SlotResult } from "../types";
+import { Icon } from "./icons";
 import { ArtifactGallery, RichText } from "./rich";
 import { CopyButton, EndpointSelect, ErrorNote, errorKey } from "./ui";
 
@@ -179,8 +180,9 @@ export function StatusBadge({ status, answered }: { status: RunMetrics["status"]
             ? "bg-slate-800 text-slate-400"
             : "bg-rose-950 text-rose-300";
   return (
-    <span className={`badge ${color}`}>
-      {status === "running" && <span className="mr-1 inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-sky-400" />}
+    <span key={status} className={`badge animate-pop ${color}`}>
+      {status === "running" && <span className="inline-block h-1.5 w-1.5 animate-pulse rounded-full bg-sky-400" />}
+      {status === "success" && <span className="inline-block h-1.5 w-1.5 rounded-full bg-emerald-400" />}
       {answered && status === "success" ? t("status.answered") : t(`status.${status}`)}
     </span>
   );
@@ -238,14 +240,17 @@ export function ResultsTable({
   const cell = (i: number, key: MetricKey, text: string, title?: string) => (
     <td className={`td text-right font-mono ${winners[key] === i ? "text-emerald-300" : ""}`} title={title}>
       {text}
-      {winners[key] === i && <span className="ml-1 text-[10px] text-emerald-500">★</span>}
+      {winners[key] === i && <span className="ml-1 inline-block animate-pop text-[10px] text-emerald-400">★</span>}
     </td>
   );
 
   return (
     <section className="card overflow-hidden p-0">
       <div className="flex items-center justify-between gap-2 border-b border-slate-800 px-4 py-2.5">
-        <h2 className="text-sm font-medium">{t("results.title")}</h2>
+        <h2 className="flex items-center gap-2 text-sm font-medium">
+          <span className={`h-2 w-2 rounded-full ${slots.some((x) => x.running) ? "animate-pulse bg-sky-400 shadow-[0_0_8px_var(--color-sky-400)]" : "bg-emerald-400"}`} />
+          {t("results.title")}
+        </h2>
         <div className="flex gap-2">{actions}</div>
       </div>
       <div className="overflow-x-auto">
@@ -267,7 +272,7 @@ export function ResultsTable({
             {slots.map((s, i) => {
               const m = s.metrics;
               return (
-                <tr key={i} className="border-b border-slate-900 last:border-0 hover:bg-slate-900/40">
+                <tr key={i} className={`row ${s.running ? "bg-sky-950/10" : ""}`}>
                   <td className="td max-w-64">
                     <div className="truncate font-medium" title={s.model}>
                       {s.model}
@@ -295,8 +300,8 @@ export function ResultsTable({
                   )}
                   <td className="td text-right">
                     {(s.output || s.images.length > 0 || (s.audio?.length ?? 0) > 0) && (
-                      <button type="button" className="text-xs text-sky-400 hover:text-sky-300" onClick={() => setOpen(i)}>
-                        {t("results.view")}
+                      <button type="button" className="btn-ghost px-2 py-1 text-xs text-sky-400 hover:text-sky-300" onClick={() => setOpen(i)}>
+                        {t("results.view")} <Icon name="chevron" size={12} />
                       </button>
                     )}
                   </td>
@@ -339,9 +344,9 @@ export function OutputModal({ result, onClose }: { result: SlotResult; onClose: 
     };
   }, [onClose]);
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4" onClick={onClose} role="dialog" aria-modal="true">
+    <div className="fixed inset-0 z-50 flex animate-fade-in items-center justify-center bg-slate-950/75 p-4 backdrop-blur-sm" onClick={onClose} role="dialog" aria-modal="true">
       <div
-        className="flex max-h-[90vh] w-full max-w-4xl flex-col rounded-xl border border-slate-700 bg-slate-900 shadow-2xl"
+        className="flex max-h-[90vh] w-full max-w-4xl animate-scale-in flex-col overflow-hidden rounded-2xl border border-slate-700/80 bg-slate-900 shadow-[0_30px_80px_-20px_rgb(0_0_0/0.8)]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center justify-between gap-3 border-b border-slate-800 px-4 py-3">
@@ -351,8 +356,8 @@ export function OutputModal({ result, onClose }: { result: SlotResult; onClose: 
           </div>
           <div className="flex items-center gap-3">
             {result.output && <CopyButton text={result.output} />}
-            <button type="button" className="btn-secondary py-1 text-xs" onClick={onClose}>
-              {t("common.close")}
+            <button type="button" className="icon-btn" onClick={onClose} aria-label={t("common.close")} title={t("common.close")}>
+              <Icon name="x" />
             </button>
           </div>
         </div>
@@ -462,12 +467,12 @@ export function OutputView({ result, maxHeight = "max-h-96" }: { result: SlotRes
   return (
     <div className="space-y-2">
       <ThinkingPanel result={result} />
-      <div className="rounded-lg border border-slate-800 bg-slate-950">
+      <div className={`rounded-xl border bg-slate-950/80 transition-colors duration-300 ${result.running ? "border-sky-900/70" : "border-slate-800"}`}>
         {hasContent && (
           <div className="flex justify-end gap-3 border-b border-slate-800/70 px-3 py-1">
             {result.output && <CopyButton text={result.output} />}
-            <button type="button" className="text-xs text-slate-400 hover:text-slate-200" onClick={() => setExpanded(true)}>
-              {t("common.expand")}
+            <button type="button" className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200" onClick={() => setExpanded(true)}>
+              <Icon name="external" size={12} /> {t("common.expand")}
             </button>
           </div>
         )}
@@ -482,7 +487,7 @@ export function OutputView({ result, maxHeight = "max-h-96" }: { result: SlotRes
           {result.output ? (
             <RichText text={result.output} cursor={result.running} />
           ) : result.running ? (
-            <p className="animate-pulse text-sm text-slate-500">{t("arena.waiting")}</p>
+            <TypingDots label={t("arena.waiting")} />
           ) : null}
         </div>
       </div>
@@ -550,16 +555,25 @@ export function AssistantMessage({ result, requestError }: { result: SlotResult;
   const [expanded, setExpanded] = useState(false);
   const hasContent = result.output || result.images.length > 0 || (result.audio?.length ?? 0) > 0;
   return (
-    <div className="space-y-3 rounded-xl border border-slate-800 bg-slate-900/40 px-4 py-3">
+    <div
+      className={`space-y-3 rounded-2xl border px-4 py-3 transition-[border-color,box-shadow] duration-500 ${
+        result.running ? "border-sky-800/60 bg-slate-900/50 shadow-[0_0_40px_-20px_var(--color-sky-500)]" : "border-slate-800/80 bg-slate-900/40"
+      }`}
+    >
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+        <span
+          className={`flex h-7 w-7 items-center justify-center rounded-lg bg-gradient-to-br from-sky-400 to-indigo-500 text-white shadow-md shadow-sky-500/30 ${result.running ? "animate-pulse" : ""}`}
+        >
+          <Icon name="sparkles" size={14} />
+        </span>
         <span className="text-sm font-medium text-slate-200">{result.model}</span>
         <span className="text-[11px] text-slate-500">{result.endpointLabel}</span>
         <span className="flex-1" />
         {hasContent && (
           <>
             {result.output && <CopyButton text={result.output} />}
-            <button type="button" className="text-xs text-slate-400 hover:text-slate-200" onClick={() => setExpanded(true)}>
-              {t("common.expand")}
+            <button type="button" className="inline-flex items-center gap-1 text-xs text-slate-400 hover:text-slate-200" onClick={() => setExpanded(true)}>
+              <Icon name="external" size={12} /> {t("common.expand")}
             </button>
           </>
         )}
@@ -568,7 +582,7 @@ export function AssistantMessage({ result, requestError }: { result: SlotResult;
       {result.output ? (
         <RichText text={result.output} cursor={result.running} />
       ) : result.running && !result.reasoning ? (
-        <p className="animate-pulse text-sm text-slate-500">{t("arena.waiting")}</p>
+        <TypingDots label={t("arena.waiting")} />
       ) : null}
       <ArtifactGallery text={result.output} images={result.images} audio={result.audio} />
       <SlotError slot={result} />
@@ -576,6 +590,20 @@ export function AssistantMessage({ result, requestError }: { result: SlotResult;
       {requestError && <ErrorNote code={requestError} />}
       <TurnMeta slot={result} />
       {expanded && <OutputModal result={result} onClose={() => setExpanded(false)} />}
+    </div>
+  );
+}
+
+/** Three bouncing dots — "the model is thinking". */
+export function TypingDots({ label }: { label: string }) {
+  return (
+    <div className="flex items-center gap-2 py-1 text-sm text-slate-500" role="status">
+      <span className="flex gap-1">
+        {[0, 1, 2].map((i) => (
+          <span key={i} className="h-1.5 w-1.5 animate-bounce rounded-full bg-sky-400/80" style={{ animationDelay: `${i * 140}ms` }} />
+        ))}
+      </span>
+      {label}
     </div>
   );
 }
