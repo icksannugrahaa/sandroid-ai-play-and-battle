@@ -1,4 +1,11 @@
-import { lazy, Suspense, useEffect, useMemo, useState, type ComponentType } from "react";
+import {
+  lazy,
+  Suspense,
+  useEffect,
+  useMemo,
+  useState,
+  type ComponentType,
+} from "react";
 
 import { ErrorBoundary } from "./components/ErrorBoundary";
 import { Icon, type IconName } from "./components/icons";
@@ -29,7 +36,9 @@ const ROUTE_ICON: Record<Route, IconName> = {
 };
 
 const SIDEBAR_KEY = "sandroid.sidebar";
-const isMac = typeof navigator !== "undefined" && /mac|iphone|ipad/i.test(navigator.platform);
+const isMac =
+  typeof navigator !== "undefined" &&
+  /mac|iphone|ipad/i.test(navigator.platform);
 
 function readCollapsed(): boolean {
   try {
@@ -114,7 +123,8 @@ export default function App() {
         hint: t("nav.playground"),
         icon: "plus",
         run: () => {
-          if (!usePlayground.getState().running) usePlayground.getState().newChat();
+          if (!usePlayground.getState().running)
+            usePlayground.getState().newChat();
           window.location.hash = href("playground");
         },
       },
@@ -129,8 +139,21 @@ export default function App() {
           window.location.hash = href("arena");
         },
       },
-      { id: "lang", label: t("palette.language"), hint: lang === "en" ? "→ Indonesia" : "→ English", icon: "globe", run: toggleLang, keywords: "bahasa language" },
-      { id: "sidebar", label: t("palette.sidebar"), icon: "sidebar", run: toggleSidebar, keywords: "menu" },
+      {
+        id: "lang",
+        label: t("palette.language"),
+        hint: lang === "en" ? "→ Indonesia" : "→ English",
+        icon: "globe",
+        run: toggleLang,
+        keywords: "bahasa language",
+      },
+      {
+        id: "sidebar",
+        label: t("palette.sidebar"),
+        icon: "sidebar",
+        run: toggleSidebar,
+        keywords: "menu",
+      },
     ],
     // eslint-disable-next-line react-hooks/exhaustive-deps -- labels follow `lang`; actions read fresh state
     [lang],
@@ -145,7 +168,9 @@ export default function App() {
         aria-current={active ? "page" : undefined}
         title={collapsed && !mobile ? t(`nav.${r}`) : undefined}
         className={`group relative flex items-center gap-3 rounded-xl text-sm whitespace-nowrap transition-all duration-200 ${
-          mobile ? "shrink-0 px-3 py-1.5" : `py-2 ${collapsed ? "justify-center px-0" : "px-3"}`
+          mobile
+            ? "shrink-0 px-3 py-1.5"
+            : `py-2 ${collapsed ? "justify-center px-0" : "px-3"}`
         } ${active ? "bg-gradient-to-r from-sky-500/15 to-sky-500/5 text-white" : "text-slate-400 hover:bg-slate-800/50 hover:text-slate-100"}`}
       >
         {!mobile && (
@@ -161,15 +186,22 @@ export default function App() {
             className={`transition-transform duration-200 group-hover:scale-110 ${active ? "text-sky-300" : ""}`}
           />
           {busy[r] && (
-            <span className="absolute -top-1 -right-1 flex h-2 w-2" aria-label="running">
+            <span
+              className="absolute -top-1 -right-1 flex h-2 w-2"
+              aria-label="running"
+            >
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-sky-400" />
             </span>
           )}
         </span>
-        {(mobile || !collapsed) && <span className="flex-1">{t(`nav.${r}`)}</span>}
+        {(mobile || !collapsed) && (
+          <span className="flex-1">{t(`nav.${r}`)}</span>
+        )}
         {r === "endpoints" && endpointCount > 0 && (mobile || !collapsed) && (
-          <span className="rounded-full bg-sky-500/15 px-1.5 text-[11px] font-medium text-sky-300">{endpointCount}</span>
+          <span className="rounded-full bg-sky-500/15 px-1.5 text-[11px] font-medium text-sky-300">
+            {endpointCount}
+          </span>
         )}
       </a>
     );
@@ -178,7 +210,9 @@ export default function App() {
   return (
     <div className="flex min-h-screen">
       {/* run indicator */}
-      <div className={`pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 overflow-hidden transition-opacity duration-300 ${anyBusy ? "opacity-100" : "opacity-0"}`}>
+      <div
+        className={`pointer-events-none fixed inset-x-0 top-0 z-50 h-0.5 overflow-hidden transition-opacity duration-300 ${anyBusy ? "opacity-100" : "opacity-0"}`}
+      >
         <div className="h-full w-full origin-left animate-progress bg-gradient-to-r from-transparent via-sky-400 to-transparent" />
       </div>
 
@@ -186,13 +220,24 @@ export default function App() {
       <aside
         className={`glass sticky top-0 z-30 hidden h-screen shrink-0 flex-col border-r transition-[width] duration-300 ease-[var(--ease-out-soft)] lg:flex ${collapsed ? "w-[4.5rem]" : "w-60"}`}
       >
-        <div className={`flex h-16 items-center gap-2.5 ${collapsed ? "justify-center px-2" : "px-4"}`}>
-          <a href={href("playground")} className="flex min-w-0 items-center gap-2.5 font-semibold tracking-tight">
-            <img src="/favicon.svg" alt="" className="h-9 w-9 shrink-0 rounded-[22%] drop-shadow-[0_0_12px_rgb(56_189_248/0.45)]" />
+        <div
+          className={`flex h-16 items-center gap-2.5 ${collapsed ? "justify-center px-2" : "px-4"}`}
+        >
+          <a
+            href={href("playground")}
+            className="flex min-w-0 items-center gap-2.5 font-semibold tracking-tight"
+          >
+            <img
+              src="/favicon.svg"
+              alt=""
+              className="h-9 w-9 shrink-0 rounded-[22%] drop-shadow-[0_0_12px_rgb(56_189_248/0.45)]"
+            />
             {!collapsed && (
               <span className="truncate leading-tight">
                 Sandroid
-                <span className="block text-xs font-medium text-sky-400">Play & Battle</span>
+                <span className="block text-xs font-medium text-sky-400">
+                  Play & Battle
+                </span>
               </span>
             )}
           </a>
@@ -216,20 +261,40 @@ export default function App() {
           </button>
         </div>
 
-        <nav className={`mt-4 flex flex-1 flex-col gap-1 overflow-y-auto ${collapsed ? "px-2" : "px-3"}`}>
-          {!collapsed && <p className="px-3 pb-1 text-[10px] font-semibold tracking-widest text-slate-600 uppercase">{t("nav.section")}</p>}
+        <nav
+          className={`mt-4 flex flex-1 flex-col gap-1 overflow-y-auto ${collapsed ? "px-2" : "px-3"}`}
+        >
+          {!collapsed && (
+            <p className="px-3 pb-1 text-[10px] font-semibold tracking-widest text-slate-600 uppercase">
+              {t("nav.section")}
+            </p>
+          )}
           {ROUTES.map((r) => navItem(r))}
         </nav>
 
-        <div className={`space-y-2 border-t border-slate-800/80 py-3 ${collapsed ? "px-2" : "px-3"}`}>
+        <div
+          className={`space-y-2 border-t border-slate-800/80 py-3 ${collapsed ? "px-2" : "px-3"}`}
+        >
           {!collapsed && (
             <p className="flex items-start gap-2 rounded-xl bg-sky-950/30 px-3 py-2 text-[11px] leading-snug text-sky-200/70">
-              <Icon name="lock" size={13} className="mt-px shrink-0 text-sky-400" />
+              <Icon
+                name="lock"
+                size={13}
+                className="mt-px shrink-0 text-sky-400"
+              />
               {t("banner.credentials")}
             </p>
           )}
-          <div className={`flex items-center gap-1 ${collapsed ? "flex-col" : ""}`}>
-            <button type="button" className="icon-btn" onClick={toggleSidebar} title={t("palette.sidebar")} aria-label={t("palette.sidebar")}>
+          <div
+            className={`flex items-center gap-1 ${collapsed ? "flex-col" : ""}`}
+          >
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={toggleSidebar}
+              title={t("palette.sidebar")}
+              aria-label={t("palette.sidebar")}
+            >
               <Icon name="sidebar" />
             </button>
             <button
@@ -250,8 +315,15 @@ export default function App() {
         {/* mobile header */}
         <header className="glass sticky top-0 z-30 border-b lg:hidden">
           <div className="flex items-center gap-3 px-4 pt-3 pb-2">
-            <a href={href("playground")} className="flex items-center gap-2 font-semibold tracking-tight">
-              <img src="/favicon.svg" alt="" className="h-8 w-8 rounded-[22%]" />
+            <a
+              href={href("playground")}
+              className="flex items-center gap-2 font-semibold tracking-tight"
+            >
+              <img
+                src="/favicon.svg"
+                alt=""
+                className="h-8 w-8 rounded-[22%]"
+              />
               <span>
                 Sandroid <span className="text-sky-400">Play & Battle</span>
               </span>
@@ -260,14 +332,26 @@ export default function App() {
             <span className="text-sky-400" title={t("banner.credentials")}>
               <Icon name="lock" size={15} />
             </span>
-            <button type="button" className="icon-btn" onClick={() => setPaletteOpen(true)} aria-label={t("palette.title")}>
+            <button
+              type="button"
+              className="icon-btn"
+              onClick={() => setPaletteOpen(true)}
+              aria-label={t("palette.title")}
+            >
               <Icon name="search" />
             </button>
-            <button type="button" className="btn-ghost px-2 py-1 text-xs" onClick={toggleLang} aria-label="Language">
+            <button
+              type="button"
+              className="btn-ghost px-2 py-1 text-xs"
+              onClick={toggleLang}
+              aria-label="Language"
+            >
               {lang.toUpperCase()}
             </button>
           </div>
-          <nav className="flex gap-1 overflow-x-auto px-3 pb-2 [scrollbar-width:none]">{ROUTES.map((r) => navItem(r, true))}</nav>
+          <nav className="flex gap-1 overflow-x-auto px-3 pb-2 [scrollbar-width:none]">
+            {ROUTES.map((r) => navItem(r, true))}
+          </nav>
         </header>
 
         <main className="mx-auto w-full max-w-7xl flex-1 px-4 py-6 lg:px-8 lg:py-8">
@@ -281,13 +365,22 @@ export default function App() {
         </main>
         <footer className="mx-auto w-full max-w-7xl px-4 pb-8 text-xs text-slate-600 lg:px-8">
           MIT · {t("app.tagline")} ·{" "}
-          <a className="inline-flex items-center gap-1 hover:text-slate-400" href="/api/docs" target="_blank" rel="noreferrer">
+          <a
+            className="inline-flex items-center gap-1 hover:text-slate-400"
+            href="/api/docs"
+            target="_blank"
+            rel="noreferrer"
+          >
             API <Icon name="external" size={11} />
           </a>
         </footer>
       </div>
 
-      <CommandPalette open={paletteOpen} onClose={() => setPaletteOpen(false)} commands={commands} />
+      <CommandPalette
+        open={paletteOpen}
+        onClose={() => setPaletteOpen(false)}
+        commands={commands}
+      />
     </div>
   );
 }

@@ -18,7 +18,12 @@ import type { Route } from "./router";
 const BASE_URL = "https://battle.sandroid.works/";
 const SITE_NAME = "Sandroid AI Play & Battle";
 
-function setMeta(selector: string, attr: "name" | "property", key: string, content: string) {
+function setMeta(
+  selector: string,
+  attr: "name" | "property",
+  key: string,
+  content: string,
+) {
   let el = document.head.querySelector<HTMLMetaElement>(selector);
   if (!el) {
     el = document.createElement("meta");
@@ -34,19 +39,42 @@ export function applySeo(route: Route, lang: Lang) {
   const pageTitle = t(`seo.${route}.title`);
   const pageDesc = t(`seo.${route}.description`);
   // Root page keeps the site-level title; sub-routes prefix the page name.
-  const title = route === "playground" ? `${SITE_NAME} — ${t("app.tagline")}` : `${pageTitle} · ${SITE_NAME}`;
+  const title =
+    route === "playground"
+      ? `${SITE_NAME} — ${t("app.tagline")}`
+      : `${pageTitle} · ${SITE_NAME}`;
 
   document.title = title;
   document.documentElement.lang = lang;
 
   setMeta('meta[name="description"]', "name", "description", pageDesc);
   setMeta('meta[property="og:title"]', "property", "og:title", title);
-  setMeta('meta[property="og:description"]', "property", "og:description", pageDesc);
+  setMeta(
+    'meta[property="og:description"]',
+    "property",
+    "og:description",
+    pageDesc,
+  );
   setMeta('meta[property="og:url"]', "property", "og:url", BASE_URL);
-  setMeta('meta[property="og:site_name"]', "property", "og:site_name", SITE_NAME);
-  setMeta('meta[property="og:locale"]', "property", "og:locale", lang === "id" ? "id_ID" : "en_US");
+  setMeta(
+    'meta[property="og:site_name"]',
+    "property",
+    "og:site_name",
+    SITE_NAME,
+  );
+  setMeta(
+    'meta[property="og:locale"]',
+    "property",
+    "og:locale",
+    lang === "id" ? "id_ID" : "en_US",
+  );
   setMeta('meta[name="twitter:title"]', "name", "twitter:title", title);
-  setMeta('meta[name="twitter:description"]', "name", "twitter:description", pageDesc);
+  setMeta(
+    'meta[name="twitter:description"]',
+    "name",
+    "twitter:description",
+    pageDesc,
+  );
 }
 
 /** React hook: re-apply SEO whenever the route or language changes. */
