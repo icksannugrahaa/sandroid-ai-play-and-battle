@@ -3,9 +3,83 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" type="image/png" href="/favicon-32x32.png" sizes="32x32" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="referrer" content="no-referrer" />
-    <title>Sandroid AI Play &amp; Battle</title>
+    <meta name="theme-color" content="#0f172a" />
+
+    <!-- Primary meta -->
+    <title>Sandroid AI Play &amp; Battle — Test, battle and rank any OpenAI-compatible model</title>
+    <meta name="description" content="Compare any OpenAI-compatible model (OpenAI, OpenRouter, Together, Groq, Ollama, LM Studio, vLLM) in one privacy-first web app: chat, vision, image generation, multi-model battles, auto-scored intelligence challenges and a global leaderboard — your API key never leaves the browser." />
+    <meta name="keywords" content="LLM comparison, AI model battle, LLM leaderboard, OpenAI-compatible, OpenRouter, Ollama, LM Studio, vLLM, Groq, Together AI, model benchmark, AI arena, LLM playground, vision model, text to image, bring your own key, BYOK, privacy-first AI" />
+    <meta name="author" content="Sandroid" />
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+    <meta name="googlebot" content="index, follow" />
+    <link rel="canonical" href="https://battle.sandroid.works/" />
+
+    <!-- Open Graph -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Sandroid AI Play &amp; Battle" />
+    <meta property="og:url" content="https://battle.sandroid.works/" />
+    <meta property="og:title" content="Sandroid AI Play &amp; Battle — Test, battle and rank any OpenAI-compatible model" />
+    <meta property="og:description" content="Chat, battle and benchmark any OpenAI-compatible model with your own API key. Privacy-first: your key and prompts never leave the browser." />
+    <meta property="og:image" content="https://battle.sandroid.works/og-image.png" />
+    <meta property="og:image:type" content="image/png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="Sandroid AI Play &amp; Battle — compare and rank OpenAI-compatible models" />
+    <meta property="og:locale" content="en_US" />
+    <meta property="og:locale:alternate" content="id_ID" />
+
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Sandroid AI Play &amp; Battle" />
+    <meta name="twitter:description" content="Test, battle and rank any OpenAI-compatible model with your own key. Chat, vision, image gen, multi-model battles, auto-scored challenges and a global leaderboard." />
+    <meta name="twitter:image" content="https://battle.sandroid.works/og-image.png" />
+    <meta name="twitter:image:alt" content="Sandroid AI Play &amp; Battle" />
+
+    <!-- Structured data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://battle.sandroid.works/#website",
+          "url": "https://battle.sandroid.works/",
+          "name": "Sandroid AI Play & Battle",
+          "description": "Test, battle and rank any OpenAI-compatible model using your own API key.",
+          "inLanguage": ["en", "id"]
+        },
+        {
+          "@type": "SoftwareApplication",
+          "@id": "https://battle.sandroid.works/#app",
+          "name": "Sandroid AI Play & Battle",
+          "url": "https://battle.sandroid.works/",
+          "applicationCategory": "DeveloperApplication",
+          "applicationSubCategory": "AI Model Comparison & Benchmarking",
+          "operatingSystem": "Any (web browser)",
+          "browserRequirements": "Requires a modern web browser with JavaScript enabled.",
+          "description": "A privacy-first web app to compare, battle and rank any OpenAI-compatible model: chat, vision, image generation, multi-model battles, auto-scored intelligence challenges and a global leaderboard — your API key never leaves the browser.",
+          "image": "https://battle.sandroid.works/og-image.png",
+          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+          "license": "https://opensource.org/licenses/MIT",
+          "isAccessibleForFree": true,
+          "featureList": [
+            "Playground chat with streaming metrics (TTFT, latency, tokens, throughput, cost)",
+            "Vision and text-to-image",
+            "Multi-model Arena battles (parallel and sequential)",
+            "Auto-scored intelligence challenges (14 challenges x 4 difficulty levels)",
+            "Global aggregate-only leaderboard",
+            "Bring your own OpenAI-compatible endpoint"
+          ]
+        }
+      ]
+    }
+    </script>
   </head>
   <body class="bg-slate-950 text-slate-100 antialiased">
     <div id="root"></div>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Sandroid AI Play & Battle — single-page app.
+  The app uses hash-based routing (#/playground, #/arena, ...); fragments are
+  not separately indexable, so only the root URL is listed. Google/Bing will
+  crawl and execute the JS and index the rendered content of the root page.
+-->
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
+  <url>
+    <loc>https://battle.sandroid.works/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+    <image:image>
+      <image:loc>https://battle.sandroid.works/og-image.png</image:loc>
+      <image:title>Sandroid AI Play &amp; Battle</image:title>
+      <image:caption>Test, battle and rank any OpenAI-compatible model with your own API key.</image:caption>
+    </image:image>
+  </url>
+</urlset>

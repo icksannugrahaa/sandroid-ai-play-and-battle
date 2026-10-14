@@ -1,3 +1,7 @@
+<div align="center">
+
+<img src="frontend/public/logo-sandroid.svg" alt="Sandroid" width="120" />
+
 # Sandroid AI Play & Battle
 
 ![CI](https://github.com/icksannugrahaa/sandroid-ai-play-and-battle/actions/workflows/ci.yml/badge.svg)
@@ -8,6 +12,8 @@
 Test, battle, and rank **any OpenAI-compatible model** using **your own API key**.
 
 Bring your own endpoint (OpenAI, OpenRouter, Together, Groq, Ollama, LM Studio, vLLM, …) and compare models head-to-head in a single, privacy-first web app: chat, vision, image generation, multi-model battles, auto-scored intelligence challenges, and a global leaderboard — all without the server ever seeing your prompts or keys.
+
+</div>
 
 ---
 
