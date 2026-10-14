@@ -1,0 +1,13 @@
+# robots.txt — Sandroid AI Play & Battle
+# https://battle.sandroid.works/
+
+User-agent: *
+Allow: /
+Disallow: /api/
+
+# Block internal/dev endpoints from crawling.
+Disallow: /api/docs
+Disallow: /api/redoc
+Disallow: /api/openapi.json
+
+Sitemap: https://battle.sandroid.works/sitemap.xml

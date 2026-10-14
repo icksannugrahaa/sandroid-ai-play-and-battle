@@ -5,6 +5,7 @@ import { Icon, type IconName } from "./components/icons";
 import { CommandPalette, type Command } from "./components/palette";
 import { useLang, useT } from "./i18n";
 import { href, ROUTES, useRoute, type Route } from "./lib/router";
+import { useSeo } from "./lib/seo";
 import { useCredentials } from "./stores/credentials";
 import { useArena, usePlayground } from "./stores/runs";
 
@@ -78,6 +79,9 @@ export default function App() {
       return !c;
     });
   const toggleLang = () => setLang(lang === "en" ? "id" : "en");
+
+  // Keep document title / meta in sync with the active hash route.
+  useSeo(route, lang);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
